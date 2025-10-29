@@ -55,5 +55,6 @@ You can also check the logs during training and infering in  ```logs_llama/order
     publisher = "Association for Computational Linguistics",
     pages = "14815--14829",
 }
-
 ```
+## Acknowledgment
+We acknowledge the publicly available codebase of [O-LoRA](https://github.com/cmnfriend/O-LoRA)
