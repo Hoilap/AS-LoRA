@@ -151,6 +151,10 @@ class DataCollatorForUIE:
 
             tokenized_input = self.tokenizer(task_input, add_special_tokens=False)["input_ids"]
             tokenized_label = self.tokenizer(label, add_special_tokens=False)["input_ids"]
+            
+            # Debug: Check tokenized sequences are non-empty
+            assert len(tokenized_input) > 0, f"Empty tokenized_input for task_input: {repr(task_input[:100])}"
+            assert len(tokenized_label) > 0, f"Empty tokenized_label for label: {repr(label[:100])}"
 
             # (input) for inference, (input + label) for training
             if instance['subset'] in ['dev', 'test']:
@@ -191,6 +195,11 @@ class DataCollatorForUIE:
                 truncation=True,
                 pad_to_multiple_of=self.pad_to_multiple_of
             )
+            
+            # Debug: Check tokenizer output shapes
+            assert model_inputs['input_ids'].shape[0] > 0, f"Empty batch: input_ids shape = {model_inputs['input_ids'].shape}"
+            assert model_inputs['input_ids'].shape[1] > 0, f"Empty sequence: input_ids shape = {model_inputs['input_ids'].shape}"
+            print(f"[DEBUG COLLATOR] input_ids shape: {model_inputs['input_ids'].shape}, attention_mask shape: {model_inputs['attention_mask'].shape}")
 
             label_mask = model_inputs["attention_mask"].bool()
             model_inputs["labels"] = model_inputs['input_ids'].masked_fill(~label_mask, self.label_pad_token_id)

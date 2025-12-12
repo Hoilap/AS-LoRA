@@ -2,8 +2,10 @@
 set -x
 
 export CUDA_DEVICE_ORDER="PCI_BUS_ID"
-export TRANSFORMERS_CACHE=/root/.cache/huggingface
+export TRANSFORMERS_CACHE=/home/dengkn/.cache/huggingface
 export LC_ALL=zh_CN.UTF-8
+# 启用更优的 PyTorch CUDA 显存分配，可节省 5-10% 显存
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 port=$(shuf -i25000-30000 -n1)
  
 # bash scripts_llama/order_1.sh> logs_and_outputs_llama/order_1/logs/train_and_infer.log 2>&1 &
@@ -12,7 +14,7 @@ deepspeed --include $5 --master_port $port src/run_uie_lora.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
-   --model_name_or_path /data/chenxu/models/llama \
+   --model_name_or_path initial_model/llama \
    --data_dir CL_Benchmark \
    --task_config_dir configs/order1_configs/dbpedia \
    --instruction_file configs/instruction_config.json \

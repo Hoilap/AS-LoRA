@@ -232,7 +232,7 @@ class UIETrainingArguments(Seq2SeqTrainingArguments):
     do_demo: bool = field(default=False, metadata={"help": "Whether to run the model as a demo in the terminal."})
     lamda_1: float = field(default = 0.5)
     lamda_2: float = field(default = 0)
-    lamda_3: float = field(default = 0)
+    lamda_3: float = field(default = 0)  #类型提示 (Type Hint)
     deepspeed_config: Optional[Union[dict, str]] = field(
         default=None,
         metadata={
@@ -244,7 +244,8 @@ class UIETrainingArguments(Seq2SeqTrainingArguments):
     )
     lora_modules: Optional[Union[List[str], str]] = field(default = ".*SelfAttention.(q|v).*")
     lora_rank: int = field(default=8)
-    # add parameters for galore
+    
+    # add parameters for galore     Gradient Low-Rank Projection
     galore_lr: float = field(default=5e-05)
     galore_rank: int = field(default=16)
     galore_update_proj_gap: int = field(default=20)
@@ -329,6 +330,8 @@ def main():
     # Distributed training:
     # The .from_pretrained methods guarantee that only one local process can concurrently
     # download model & vocab.
+
+    # 按照加载旧adapter/初始化新的lora的方式加载底座和分词器
     if 'adapter' in model_args.model_name_or_path: # load lora-config
         config = PeftConfig.from_pretrained(model_args.model_name_or_path)
         if 'llama' in model_args.model_name_or_path.lower():
@@ -382,9 +385,10 @@ def main():
     else: 
         model_class = AutoModelForSeq2SeqLM
 
+    # 根据config把模型实体加载进来，并把配置lora参数，并把lora模块加到模型中
     if 'adapter' in model_args.model_name_or_path: # add lora-adapter to the original model
-        model = model_class.from_pretrained(config.base_model_name_or_path)
-        model = PeftModel.from_pretrained(model, model_args.model_name_or_path)
+        model = model_class.from_pretrained(config.base_model_name_or_path)  #加载 底座模型 的权重
+        model = PeftModel.from_pretrained(model, model_args.model_name_or_path)  #它会在底座模型上，把之前训练好的 LoRA 权重（Adapter）“挂” 上去。
     elif 'llama' in model_args.model_name_or_path.lower():
         model = model_class.from_pretrained(
             model_args.model_name_or_path,

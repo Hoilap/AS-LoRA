@@ -2,7 +2,7 @@
 set -x
 
 export CUDA_DEVICE_ORDER="PCI_BUS_ID"
-export TRANSFORMERS_CACHE=/data/chenxu/others/.cache/huggingface
+export TRANSFORMERS_CACHE=/home/dengkn/.cache/huggingface
 export LC_ALL=zh_CN.UTF-8
 port=$(shuf -i25000-30000 -n1)
 # bash scripts/order_1.sh outputs_1e-03_1e-05_8 8 "localhost:0,1,2,3,4,5,6,7" 1e-05 ".*EncDecAttention.(q|v).*" ".*SelfAttention.(q|v).*" ".*SelfAttention.(q|v).loranew_A.*" > logs/1e-03_1e-05_8_order_1.log 2>&1
@@ -11,7 +11,7 @@ deepspeed --include $3 --master_port $port src/run_uie_lora.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
-   --model_name_or_path /data/chenxu/models/t5-large \
+   --model_name_or_path initial_model/t5-large \
    --data_dir CL_Benchmark \
    --task_config_dir configs/order1_configs/dbpedia \
    --instruction_file configs/instruction_config.json \

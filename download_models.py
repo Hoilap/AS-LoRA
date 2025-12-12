@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+"""
+下载模型到 initial_model 目录
+"""
+import os
+from transformers import AutoModel, AutoTokenizer
+
+# 创建 initial_model 目录
+os.makedirs("initial_model", exist_ok=True)
+
+print("开始下载 T5-large 模型...")
+# 下载 T5-large
+t5_model = AutoModel.from_pretrained("google-t5/t5-large")
+t5_tokenizer = AutoTokenizer.from_pretrained("google-t5/t5-large")
+
+# 保存到 initial_model/t5-large
+t5_model.save_pretrained("initial_model/t5-large")
+t5_tokenizer.save_pretrained("initial_model/t5-large")
+print("✓ T5-large 模型已保存到 initial_model/t5-large")
+
+# 使用 ModelScope 下载 LLaMA2 模型
+# 注意：取消注释以下内容来下载 LLaMA2
+try:
+    from modelscope import snapshot_download
+    print("开始下载 LLaMA2 模型...")
+    model_dir = snapshot_download('LLM-Research/llama-2-7b',local_dir='initial_model/llama')
+    print("✓ LLaMA 模型已保存到 initial_model/llama")
+except ImportError:
+    print("⚠ 若要下载 LLaMA2，请先安装 modelscope: pip install modelscope")
+except Exception as e:
+    print(f"❌ LLaMA 下载失败: {str(e)}")
+
+print("\n下载完成！")
+print("模型目录结构:")
+os.system("ls -la initial_model/")

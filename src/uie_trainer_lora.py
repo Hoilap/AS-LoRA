@@ -601,7 +601,8 @@ class UIETrainer(Seq2SeqTrainer):
         steps_trained_in_current_epoch = 0
         steps_trained_progress_bar = None
 
-        init_weights = {name: param.data.clone().cpu().numpy() for name, param in self.model.named_parameters() if name.rsplit(".weight")[0] in self.target_modules_list}
+        # convert bfloat16 weights to float32 before moving to cpu->numpy to avoid dtype errors
+        init_weights = {name: param.data.float().cpu().numpy() for name, param in self.model.named_parameters() if name.rsplit(".weight")[0] in self.target_modules_list}
         # init_weights = {}
 
         # Check if continuing training from a checkpoint
@@ -936,6 +937,13 @@ class UIETrainer(Seq2SeqTrainer):
         """
         model.train()
         inputs = self._prepare_inputs(inputs)
+        
+        # Debug: Check input shapes before forward pass
+        if 'input_ids' in inputs:
+            assert inputs['input_ids'].shape[0] > 0, f"Batch size is 0: input_ids shape = {inputs['input_ids'].shape}"
+            assert inputs['input_ids'].shape[1] > 0, f"Sequence length is 0: input_ids shape = {inputs['input_ids'].shape}"
+            if inputs['input_ids'].dim() == 2:
+                print(f"[DEBUG training_step] input_ids shape: {inputs['input_ids'].shape}, attention_mask shape: {inputs.get('attention_mask', 'N/A').shape if 'attention_mask' in inputs else 'N/A'}")
 
         if is_sagemaker_mp_enabled():
             loss_mb = smp_forward_backward(model, inputs, self.args.gradient_accumulation_steps)

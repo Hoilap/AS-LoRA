@@ -2,7 +2,7 @@
 set -x
 
 export CUDA_DEVICE_ORDER="PCI_BUS_ID"
-export TRANSFORMERS_CACHE=/root/.cache/huggingface
+export TRANSFORMERS_CACHE=/home/dengkn/.cache/huggingface
 export LC_ALL=zh_CN.UTF-8
 port=$(shuf -i25000-30000 -n1)
 
@@ -12,7 +12,7 @@ deepspeed --include $5 --master_port $port src/run_uie_lora.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
-   --model_name_or_path /data/chenxu/models/llama \
+   --model_name_or_path initial_model/llama \
    --data_dir CL_Benchmark \
    --task_config_dir configs/order2_configs/dbpedia \
    --instruction_file configs/instruction_config.json \
