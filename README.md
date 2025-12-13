@@ -283,6 +283,11 @@ from_pretrained() 的加载优先级:
 
 RTX 4090 显存: 24GB
 
+
+
+```
+conda activate aslora && pip install -i https://pypi.tuna.tsinghua.edu.cn/simple 'numpy<2' 'pyarrow==10.0.1' 'datasets==2.13.1' 'fsspec==2023.6.0' 'tqdm==4.65.0'
+```
 ！无论 ZeRO-3 是否 offload，只要启用都会出现隐藏维度为 0 的错误。这说明问题根本不在 offload，而在 ZeRO-3 与 gradient_checkpointing 的深层兼容性问题，或者与 PEFT/LoRA 在分片下的参数重构问题。
 ## Setup
 

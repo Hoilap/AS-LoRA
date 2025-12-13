@@ -5,7 +5,7 @@ export CUDA_DEVICE_ORDER="PCI_BUS_ID"
 export TRANSFORMERS_CACHE=/home/dengkn/.cache/huggingface
 export LC_ALL=zh_CN.UTF-8
 # 启用更优的 PyTorch CUDA 显存分配，可节省 5-10% 显存
-export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+export PYTORCH_ALLOC_CONF=expandable_segments:True
 port=$(shuf -i25000-30000 -n1)
  
 # bash scripts_llama/order_1.sh> logs_and_outputs_llama/order_1/logs/train_and_infer.log 2>&1 &
