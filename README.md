@@ -283,8 +283,9 @@ from_pretrained() 的加载优先级:
 
 RTX 4090 显存: 24GB
 
-
-
+解决了deepspeed问题后解决了OOM问题？我觉得不是？是因为上一个进程结束了
+用了34364MiB=33GB
+时间：1642-2009，约3个小时
 ```
 conda activate aslora && pip install -i https://pypi.tuna.tsinghua.edu.cn/simple 'numpy<2' 'pyarrow==10.0.1' 'datasets==2.13.1' 'fsspec==2023.6.0' 'tqdm==4.65.0'
 ```

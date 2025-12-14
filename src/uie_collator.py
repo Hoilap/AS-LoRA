@@ -197,9 +197,9 @@ class DataCollatorForUIE:
             )
             
             # Debug: Check tokenizer output shapes
-            assert model_inputs['input_ids'].shape[0] > 0, f"Empty batch: input_ids shape = {model_inputs['input_ids'].shape}"
-            assert model_inputs['input_ids'].shape[1] > 0, f"Empty sequence: input_ids shape = {model_inputs['input_ids'].shape}"
-            print(f"[DEBUG COLLATOR] input_ids shape: {model_inputs['input_ids'].shape}, attention_mask shape: {model_inputs['attention_mask'].shape}")
+            #assert model_inputs['input_ids'].shape[0] > 0, f"Empty batch: input_ids shape = {model_inputs['input_ids'].shape}"
+            #assert model_inputs['input_ids'].shape[1] > 0, f"Empty sequence: input_ids shape = {model_inputs['input_ids'].shape}"
+            #print(f"[DEBUG COLLATOR] input_ids shape: {model_inputs['input_ids'].shape}, attention_mask shape: {model_inputs['attention_mask'].shape}")
 
             label_mask = model_inputs["attention_mask"].bool()
             model_inputs["labels"] = model_inputs['input_ids'].masked_fill(~label_mask, self.label_pad_token_id)

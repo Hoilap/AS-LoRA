@@ -524,7 +524,16 @@ class UIETrainer(Seq2SeqTrainer):
                 gradient_checkpointing_kwargs = args.gradient_checkpointing_kwargs
 
             self.model.gradient_checkpointing_enable(gradient_checkpointing_kwargs=gradient_checkpointing_kwargs)
-
+            # ================= [新增代码 START] =================
+            # 修复 LoRA + Gradient Checkpointing 导致的梯度图中断问题
+            if hasattr(self.model, "enable_input_require_grads"):
+                self.model.enable_input_require_grads()
+            else:
+                def make_inputs_require_grad(module, input, output):
+                    output.requires_grad_(True)
+                self.model.get_input_embeddings().register_forward_hook(make_inputs_require_grad)
+            # ================= [新增代码 END] =================
+            
         model = self._wrap_model(self.model_wrapped)
 
         # as the model is wrapped, don't use `accelerator.prepare`
@@ -920,30 +929,16 @@ class UIETrainer(Seq2SeqTrainer):
                       init_weights: Dict[str, torch.Tensor]) -> torch.Tensor:
         """
         Perform a training step on a batch of inputs.
-
-        Subclass and override to inject custom behavior.
-
-        Args:
-            model (`nn.Module`):
-                The model to train.
-            inputs (`Dict[str, Union[torch.Tensor, Any]]`):
-                The inputs and targets of the model.
-
-                The dictionary will be unpacked before being fed to the model. Most models expect the targets under the
-                argument `labels`. Check your model's documentation for all accepted arguments.
-
-        Return:
-            `torch.Tensor`: The tensor with training loss on this batch.
         """
         model.train()
         inputs = self._prepare_inputs(inputs)
         
-        # Debug: Check input shapes before forward pass
-        if 'input_ids' in inputs:
-            assert inputs['input_ids'].shape[0] > 0, f"Batch size is 0: input_ids shape = {inputs['input_ids'].shape}"
-            assert inputs['input_ids'].shape[1] > 0, f"Sequence length is 0: input_ids shape = {inputs['input_ids'].shape}"
-            if inputs['input_ids'].dim() == 2:
-                print(f"[DEBUG training_step] input_ids shape: {inputs['input_ids'].shape}, attention_mask shape: {inputs.get('attention_mask', 'N/A').shape if 'attention_mask' in inputs else 'N/A'}")
+        # Debug: Check input shapes
+        if 'input_ids' in inputs and inputs['input_ids'].dim() == 2:
+            # 减少打印频率，避免刷屏，只打印部分
+            if self.state.global_step % 10 == 0:
+                 pass 
+                 # print(f"[DEBUG] input_ids: {inputs['input_ids'].shape}")
 
         if is_sagemaker_mp_enabled():
             loss_mb = smp_forward_backward(model, inputs, self.args.gradient_accumulation_steps)
@@ -953,55 +948,63 @@ class UIETrainer(Seq2SeqTrainer):
             loss = self.compute_loss(model, inputs)
 
         if self.args.n_gpu > 1:
-            loss = loss.mean()  # mean() to average on multi-gpu parallel training
+            loss = loss.mean()
 
-        if self.args.gradient_accumulation_steps > 1 and not self.deepspeed:
-            # deepspeed handles loss scaling by gradient_accumulation_steps in its `backward`
-            loss = loss / self.args.gradient_accumulation_steps
+        # 注意：如果是 DeepSpeed Engine，它会自动处理除以 gradient_accumulation_steps
+        # 但如果我们找不到 Engine，就需要手动除。这里先暂存原始 loss
+        raw_loss = loss 
 
-        ########################### Regularization ##########################
-        # orthogonal_loss = 0.
-        # for name, param in self.model.named_parameters():
-        #     if "lora_A" in name:
-        #         for name_, param_ in self.model.named_parameters():
-        #             if "loranew_A" in name_ and name.split("lora_A")[0] == name_.split("loranew_A")[0]:
-        #                 orthogonal_loss += torch.abs(torch.mm(param, param_.T)).sum() # [r * dim] * [dim * r]
-        #                 break # target modules have been matched
-
-        # l2-normalization for loranew_A/B
+        # L1 Regularization (保持你的原有逻辑)
         l1_loss = 0.
-        # l2_loss = 0.
         for name, param in self.model.named_parameters():
-            # if "loranew_" in name:
-            #     l2_loss += torch.norm(param, p=2)
             if name in self.target_modules_list:
                 c_param = param - init_weights[name]
                 diff = torch.matmul(c_param, c_param.T) - torch.eye(c_param.shape[0], device=c_param.device)
                 l1_loss += torch.norm(diff, p=2)
-
-
-        # lamda_1 = self.args.lamda_1
-        # lamda_2 = self.args.lamda_2
+        
         lamda_3 = self.args.lamda_3
-
-        # logger.info(f"orthogonal_loss: {orthogonal_loss.item()}; l2_loss: {l2_loss.item()}; accuracy_loss: {loss.item()}; λ1: {lamda_1}; λ2: {lamda_2}")
-        # loss = loss + orthogonal_loss * lamda_1 + l2_loss * lamda_2 + l1_loss * lamda_3
         loss = loss + l1_loss * lamda_3
-        # ######################################################################
 
-        if self.use_apex:
+        # =================================================================
+        # 核心修复逻辑：自动寻找可用的 backward 方法
+        # =================================================================
+        
+        # 1. 尝试寻找 DeepSpeed Engine
+        # Engine 通常有 .backward() 方法
+        ds_engine = None
+        
+        # 检查 model_wrapped (最常见的位置)
+        if hasattr(self, "model_wrapped") and hasattr(self.model_wrapped, "backward"):
+            ds_engine = self.model_wrapped
+        # 检查传入的 model 参数
+        elif hasattr(model, "backward"):
+            ds_engine = model
+        # 检查 self.deepspeed 变量
+        elif hasattr(self, "deepspeed") and hasattr(self.deepspeed, "backward"):
+            ds_engine = self.deepspeed
+
+        if ds_engine is not None:
+            # 方案 A: 找到了 DeepSpeed Engine，直接使用它
+            # Engine 会自动处理 loss scaling 和 gradient accumulation
+            ds_engine.backward(loss)
+        
+        elif self.use_apex:
+            # 方案 B: Apex
             with amp.scale_loss(loss, self.optimizer) as scaled_loss:
                 scaled_loss.backward()
-        # elif self.deepspeed:
-            # loss gets scaled under gradient_accumulation_steps in deepspeed
-            # self.accelerator.backward(loss)
-            # loss = self.deepspeed.backward(loss)
+        
         else:
-            scaled_loss = loss / self.args.gradient_accumulation_steps
-            scaled_loss.backward()
+            # 方案 C: 标准 PyTorch 回退 (当找不到 Engine 且 Accelerator 报错时)
+            # 之前报 "element 0... no grad" 是因为梯度图断裂，那个问题我们已经通过 enable_input_require_grads 修复了
+            # 所以现在可以直接调用 .backward()
+            
+            # 手动处理梯度累积的缩放
+            if self.args.gradient_accumulation_steps > 1:
+                loss = loss / self.args.gradient_accumulation_steps
+            
+            loss.backward()
 
-        return loss.detach()
-    
+        return raw_loss.detach()
 
     def _pad_across_processes(self, tensor, pad_index=-100):
         """
@@ -1056,15 +1059,16 @@ class UIETrainer(Seq2SeqTrainer):
 
         # if eval is called w/o train init deepspeed here
         if args.deepspeed and not self.deepspeed:
-
-            # XXX: eval doesn't have `resume_from_checkpoint` arg but we should be able to do eval
-            # from the checkpoint eventually
-            deepspeed_engine, _, _ = deepspeed_init(
+            deepspeed_engine, optimizer, lr_scheduler = deepspeed_init(
                 self, num_training_steps=0, inference=True
             )
+            # 核心：要把 engine 赋给 model_wrapped
             self.model = deepspeed_engine.module
             self.model_wrapped = deepspeed_engine
             self.deepspeed = deepspeed_engine
+            # 别忘了更新优化器和调度器（虽然预测时可能用不到）
+            self.optimizer = optimizer
+            self.lr_scheduler = lr_scheduler
 
         model = self._wrap_model(self.model, training=False)
 
