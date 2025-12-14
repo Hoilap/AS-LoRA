@@ -446,6 +446,8 @@ def main():
                     if name.find(target_module) != -1:
                         param.requires_grad = True 
 
+    # Print trainable parameters statistics using peft's built-in method
+    model.print_trainable_parameters()
 
     if (
             hasattr(model.config, "max_position_embeddings")
