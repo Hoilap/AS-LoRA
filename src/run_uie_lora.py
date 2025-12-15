@@ -287,7 +287,7 @@ def main():
 
     # Log on each process the small summary:
     logger.warning(
-        f"Process rank: {training_args.local_rank}, device: {training_args.device}, n_gpu: {training_args.n_gpu}"
+        f"According to arugements, Process rank: {training_args.local_rank}, device: {training_args.device}, n_gpu: {training_args.n_gpu}"
         + f"distributed training: {bool(training_args.local_rank != -1)}, 16-bits training: {training_args.fp16}"
     )
     logger.info(f"Training/evaluation parameters {training_args}")
@@ -387,7 +387,10 @@ def main():
 
     # 根据config把模型实体加载进来，并把配置lora参数，并把lora模块加到模型中
     if 'adapter' in model_args.model_name_or_path: # add lora-adapter to the original model
-        model = model_class.from_pretrained(config.base_model_name_or_path)  #加载 底座模型 的权重
+        model = model_class.from_pretrained(
+            config.base_model_name_or_path,
+            torch_dtype=torch.float16 if training_args.fp16 else torch.float32  #新加，权重的加载方式
+        )  #加载 底座模型 的权重 
         model = PeftModel.from_pretrained(model, model_args.model_name_or_path)  #它会在底座模型上，把之前训练好的 LoRA 权重（Adapter）“挂” 上去。
     elif 'llama' in model_args.model_name_or_path.lower():
         model = model_class.from_pretrained(
@@ -396,7 +399,8 @@ def main():
             config=config,
             cache_dir=model_args.cache_dir,
             revision=model_args.model_revision,
-            use_auth_token=True if model_args.use_auth_token else None
+            use_auth_token=True if model_args.use_auth_token else None,
+            torch_dtype=torch.float16 if training_args.fp16 else torch.float32
         )
         peft_config = LoraConfig(
             task_type=TaskType.CAUSAL_LM, inference_mode=False, r=model_args.lora_dim, lora_alpha=32, lora_dropout=0.1, target_modules=training_args.lora_modules
@@ -410,6 +414,7 @@ def main():
             cache_dir=model_args.cache_dir,
             revision=model_args.model_revision,
             use_auth_token=True if model_args.use_auth_token else None,
+            torch_dtype=torch.float16 if training_args.fp16 else torch.float32
         )
         peft_config = LoraConfig(
             task_type=TaskType.SEQ_2_SEQ_LM, inference_mode=False, r=model_args.lora_dim, lora_alpha=32, lora_dropout=0.1, target_modules=training_args.lora_modules # target_modules=["EncDecAttention.q", "EncDecAttention.v"]
@@ -448,6 +453,36 @@ def main():
 
     # Print trainable parameters statistics using peft's built-in method
     model.print_trainable_parameters()
+    
+    # Verify model parameter dtypes (precision check)
+    def check_model_precision(model):
+        """检查并打印模型参数的精度信息"""
+        dtype_count = {}
+        sample_params = {}
+        
+        for name, param in model.named_parameters():
+            dtype_str = str(param.dtype).replace('torch.', '')
+            dtype_count[dtype_str] = dtype_count.get(dtype_str, 0) + 1
+            if dtype_str not in sample_params:
+                sample_params[dtype_str] = []
+            if len(sample_params[dtype_str]) < 3:
+                sample_params[dtype_str].append(name)
+        
+        logger.warning("\n" + "="*60)
+        logger.warning("模型参数精度验证:")
+        logger.warning("="*60)
+        for dtype, count in sorted(dtype_count.items()):
+            logger.warning(f"  {dtype}: {count} 个参数")
+            logger.warning(f"    示例参数: {sample_params[dtype][:3]}")
+        logger.warning("="*60 + "\n")
+        
+        # Check first parameter
+        first_param = next(model.parameters())
+        logger.warning(f"✓ 第一个参数精度: {first_param.dtype}")
+        logger.warning(f"✓ 第一个参数设备: {first_param.device}\n")
+    
+    if local_rank == 0:
+        check_model_precision(model)
 
     if (
             hasattr(model.config, "max_position_embeddings")

@@ -339,6 +339,23 @@ deepspeed --include $5 --master_port $port src/run_uie_lora.py \
    --galore_lr $6 \
    --gradient_checkpointing True
 ```
+
+打印出来trainable params: 1447034880 || all params: 6742609920 || trainable%: 21.461049907511185，说明galore全参训练了
+
+12/15/2025 13:37:48 - WARNING - __main__ - Process rank: 1, device: cuda:1, n_gpu: 1distributed training: True, 16-bits training: False
+
+if 'adapter' in model_args.model_name_or_path: # add lora-adapter to the original model
+        model = model_class.from_pretrained(
+            config.base_model_name_or_path,
+            torch_dtype=torch.float16 if training_args.fp16 else torch.float32  #新加，权重的加载方式
+        )  #加载 底座模型 的权重 
+
+
+RuntimeError: cusolver error: CUSOLVER_STATUS_EXECUTION_FAILED
+File ".../Proj_torch/proj_projector.py", line 83, in get_orthogonal_matrix
+    U, s, Vh = torch.linalg.svd(matrix, full_matrices = False)
+原因：SVD (奇异值分解) 是一个数值计算密集的操作，对数值精度要求极高。当用 float16 进行 SVD 时，会出现数值不稳定的问题。
+
 ## Setup
 
 You can install the required libraries by running 
