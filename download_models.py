@@ -8,6 +8,11 @@ from transformers import AutoModel, AutoTokenizer
 # 创建 initial_model 目录
 os.makedirs("initial_model", exist_ok=True)
 
+# 在脚本内部设置 Hugging Face 镜像端点（若环境已设置则不覆盖）
+HF_MIRROR = os.environ.get("HF_ENDPOINT") or "https://hf-mirror.com"
+os.environ["HF_ENDPOINT"] = HF_MIRROR
+print(f"已设置 HF_ENDPOINT = {HF_MIRROR}")
+
 print("开始下载 T5-large 模型...")
 # 下载 T5-large
 t5_model = AutoModel.from_pretrained("google-t5/t5-large")
