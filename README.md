@@ -134,7 +134,6 @@
 #### **`__init__.py`**
 - 导出`ProjAdamW`优化器供外部使用
 
----
 
 ### 📁 **七、src/peft/** - LoRA实现
 
@@ -209,7 +208,7 @@ for name, param in model.named_parameters():
 fine-tune loranew_A/B (initialized in "update_layer"[lora.py])
 为什么这样搞？工程可能在做持续学习（Continual Learning）或多阶段微调
 
-### 情况1️⃣：当 model_name_or_path 是**本地路径**
+#### 情况1️⃣：当 model_name_or_path 是**本地路径**
 
 ```
 参数: --model_name_or_path initial_model/llama
@@ -231,9 +230,7 @@ fine-tune loranew_A/B (initialized in "update_layer"[lora.py])
 
 **关键点**：如果你提供的是本地路径，HuggingFace 库**不会自动从网络下载**！
 
----
-
-### 情况2️⃣：当 model_name_or_path 是 **HuggingFace model ID**
+#### 情况2️⃣：当 model_name_or_path 是 **HuggingFace model ID**
 
 ```
 参数: --model_name_or_path meta-llama/Llama-2-7b
@@ -262,7 +259,8 @@ from_pretrained() 的加载优先级:
 - 这个方法可以自动从 HuggingFace 下载模型（如果传入 model ID 而不是本地路径）
 - **原作者硬编码了模型路径** - 使用的是 `/data/chenxu/models/t5-large` 和 `/data/chenxu/models/llama`，这是他的本地路径   以下脚本文件已全部更新，将模型路径从 `/data/chenxu/models/` 改为 `initial_model/`：
 
-
+### 内存计算/OOM问题踩坑、
+```
 当前配置：
   模型: LLaMA-7B (约13GB fp32)
   LoRA rank: 8
@@ -280,19 +278,20 @@ from_pretrained() 的加载优先级:
   激活值 (即使有gradient checkpointing): ~2-4GB
   临时缓冲区: ~1-2GB
   单卡总需求: 约 23-24GB
-
 RTX 4090 显存: 24GB
+```
+### try:用了34364MiB=33GB, fp32,时间：1642-2009，约3个小时(one task)====重复不出来
 
-解决了deepspeed问题后解决了OOM问题？我觉得不是？是因为上一个进程结束了
-用了34364MiB=33GB
-时间：1642-2009，约3个小时
+
+### 不兼容报错
 ```
 conda activate aslora && pip install -i https://pypi.tuna.tsinghua.edu.cn/simple 'numpy<2' 'pyarrow==10.0.1' 'datasets==2.13.1' 'fsspec==2023.6.0' 'tqdm==4.65.0'
 ```
-！无论 ZeRO-3 是否 offload，只要启用都会出现隐藏维度为 0 的错误。这说明问题根本不在 offload，而在 ZeRO-3 与 gradient_checkpointing 的深层兼容性问题，或者与 PEFT/LoRA 在分片下的参数重构问题。
+### 尝试zero3失败
+无论 ZeRO-3 是否 offload，只要启用都会出现隐藏维度为 0 的错误。这说明问题根本不在 offload，而在 ZeRO-3 与 gradient_checkpointing 的深层兼容性问题，或者与 PEFT/LoRA 在分片下的参数重构问题。
 
 
-脚本阅读：
+### 脚本阅读
 ```
 bash scripts_llama/order_1_optimized.sh outputs_order_1 2 2e-04 ".*mlp.gate_proj.*" "localhost:0,1" 1e-06
 #                                         $1           $2  $3       $4                $5              $6
@@ -339,22 +338,177 @@ deepspeed --include $5 --master_port $port src/run_uie_lora.py \
    --galore_lr $6 \
    --gradient_checkpointing True
 ```
+打印出来`trainable params: 1447034880 || all params: 6742609920 || trainable%: 21.461049907511185`，说明galore全参训练了
 
-打印出来trainable params: 1447034880 || all params: 6742609920 || trainable%: 21.461049907511185，说明galore全参训练了
-
-12/15/2025 13:37:48 - WARNING - __main__ - Process rank: 1, device: cuda:1, n_gpu: 1distributed training: True, 16-bits training: False
-
+`12/15/2025 13:37:48 - WARNING - __main__ - Process rank: 1, device: cuda:1, n_gpu: 1distributed training: True, 16-bits training: False` 说明使用了32位
+```
 if 'adapter' in model_args.model_name_or_path: # add lora-adapter to the original model
         model = model_class.from_pretrained(
             config.base_model_name_or_path,
             torch_dtype=torch.float16 if training_args.fp16 else torch.float32  #新加，权重的加载方式
         )  #加载 底座模型 的权重 
+```
+在代码中做出如下修正，解决不知道导入精度为多少的问题
 
-
+### GORP用不了BF16
+```
 RuntimeError: cusolver error: CUSOLVER_STATUS_EXECUTION_FAILED
 File ".../Proj_torch/proj_projector.py", line 83, in get_orthogonal_matrix
     U, s, Vh = torch.linalg.svd(matrix, full_matrices = False)
+```
 原因：SVD (奇异值分解) 是一个数值计算密集的操作，对数值精度要求极高。当用 float16 进行 SVD 时，会出现数值不稳定的问题。
+
+
+### 报错：配置精度出现冲突
+```
+ValueError: Please correct the following DeepSpeed config values that mismatch TrainingArguments values:
+- ds fp16.enabled=True vs hf fp16|fp16_full_eval+fp16_backend(amp)=False
+```
+DeepSpeed 配置文件 ([stage2_llama.config](configs/ds_configs/stage2_llama.config)stage2_llama.config)：
+设置了 fp16.enabled=True（启用半精度浮点）
+HuggingFace 训练参数：
+没有启用 fp16（默认使用 float32）
+即你的脚本中没有 --fp16 参数
+基座模型加载时只看命令行参数（--bf16/--fp16），不看 DeepSpeed 配置文件。
+阶段2：DeepSpeed 初始化（Trainer 创建时）
+
+DeepSpeed 读取配置文件（如 stage2_llama.config）
+如果配置与模型加载精度不一致，DeepSpeed 会尝试转换
+但转换有额外开销和风险
+你的 DeepSpeed 配置：
+{
+    "bfloat16": {"enabled": true},
+    "fp16": {"enabled": "auto"}
+}
+bf16: true → DeepSpeed 期望 BF16
+fp16: auto → 根据命令行自动决定
+
+### 什么是CPU offload
+
+标准方式：
+模型参数 → GPU → 计算 → 反向传播
+
+CPU Offload：
+模型参数 → CPU (存储) 
+计算时 → 把参数移到GPU → 计算 → 移回CPU
+情况1：使用了 Stage 2 + CPU Offload（可能）
+从你的脚本：
+```
+{
+  "zero_optimization": {
+    "stage": 2,
+    "offload_optimizer": {
+      "device": "cpu",
+      "pin_memory": true
+    }
+  }
+}
+```
+
+
+dbpedia 43151MiB
+amazon 17562MiB
+
+
+
+- try: order_1_optimized.sh  不能跑：
+```
+============================================================
+12/15/2025 15:50:55 - WARNING - __main__ - 模型参数精度验证:
+12/15/2025 15:50:55 - WARNING - __main__ - ============================================================
+12/15/2025 15:50:55 - WARNING - __main__ -   float16: 291 个参数
+12/15/2025 15:50:55 - WARNING - __main__ -     示例参数: ['base_model.model.model.embed_tokens.weight', 'base_model.model.model.layers.0.self_attn.q_proj.weight', 'base_model.model.model.layers.0.self_attn.k_proj.weight']
+12/15/2025 15:50:55 - WARNING - __main__ -   float32: 256 个参数
+12/15/2025 15:50:55 - WARNING - __main__ -     示例参数: ['base_model.model.model.layers.0.self_attn.q_proj.lora_A.default.weight', 'base_model.model.model.layers.0.self_attn.q_proj.lora_B.default.weight', 'base_model.model.model.layers.0.self_attn.q_proj.loranew_A.default.weight']
+12/15/2025 15:50:55 - WARNING - __main__ - ============================================================
+
+12/15/2025 15:50:55 - WARNING - __main__ - ✓ 第一个参数精度: torch.float16
+12/15/2025 15:50:55 - WARNING - __main__ - ✓ 第一个参数设备: cpu
+
+-----Gradient checkpointing: True -----
+trainable params: 1447034880 || all params: 6742609920 || trainable%: 21.461049907511185
+```
+- try：能跑？第10个样例卡住
+```
+-----Gradient checkpointing: True -----
+12/15/2025 16:21:18 - WARNING - __main__ - 
+============================================================
+12/15/2025 16:21:18 - WARNING - __main__ - 模型参数精度验证:
+12/15/2025 16:21:18 - WARNING - __main__ - ============================================================
+12/15/2025 16:21:18 - WARNING - __main__ -   float16: 291 个参数
+12/15/2025 16:21:18 - WARNING - __main__ -     示例参数: ['base_model.model.model.embed_tokens.weight', 'base_model.model.model.layers.0.self_attn.q_proj.weight', 'base_model.model.model.layers.0.self_attn.k_proj.weight']
+12/15/2025 16:21:18 - WARNING - __main__ -   float32: 256 个参数
+12/15/2025 16:21:18 - WARNING - __main__ -     示例参数: ['base_model.model.model.layers.0.self_attn.q_proj.lora_A.default.weight', 'base_model.model.model.layers.0.self_attn.q_proj.lora_B.default.weight', 'base_model.model.model.layers.0.self_attn.q_proj.loranew_A.default.weight']
+12/15/2025 16:21:18 - WARNING - __main__ - ============================================================
+
+12/15/2025 16:21:18 - WARNING - __main__ - ✓ 第一个参数精度: torch.float16
+12/15/2025 16:21:18 - WARNING - __main__ - ✓ 第一个参数设备: cpu
+```
+
+
+### 过程中出现脚本一样但一个OOM另一个没有的问题？  **未解决**
+为什么不一样？order_1有检查点而order_1_optimized_lowmem_test没有
+```
+resume_from_checkpoint (`str` or `bool`, *optional*):
+    If a `str`, local path to a saved checkpoint as saved by a previous instance of [`Trainer`]. If a
+    `bool` and equals `True`, load the last checkpoint in *args.output_dir* as saved by a previous instance
+    of [`Trainer`]. If present, training will resume from the model/optimizer/scheduler states loaded here.
+```
+但根据代码逻辑 line 304，如果 output_dir 已存在且有 checkpoint，会自动 resume。为了完全避免任何 resume 行为，建议显式添加：
+这样可以明确禁止任何 checkpoint 加载。
+
+
+
+
+### deepspeed_init
+1. deepspeed_init 会不会自动把 self.model 变成 Engine？
+答案：是的，它应该会（有副作用）。
+deepspeed_init 是 Hugging Face Trainer 内部的一个辅助函数。它的作用流程通常如下：
+它读取 training_args.deepspeed 配置文件。
+它调用底层的 deepspeed.initialize(model=self.model, ...)。
+关键点：它会把初始化好的 DeepSpeed Engine 赋值回 self.model，同时也会更新 self.optimizer 和 self.lr_scheduler。
+它通常还会把 self.deepspeed 这个属性指向这个 Engine。
+但是，在你之前的报错中：
+AttributeError: 'LlamaForCausalLM_with_lossmask' object has no attribute 'backward'
+这说明虽然 deepspeed_init 运行了，但在那个特定的时间点，代码引用的对象（self.deepspeed）并没有成功指向 Engine，或者 self.model 被某些后续操作（比如 _wrap_model）又变回了原始模型。
+2. DeepSpeed 是 Accelerator 吗？
+不完全是，它们是两层关系。
+DeepSpeed: 是一个优化引擎（Engine）。它直接接管模型的训练、梯度更新、显存管理（ZeRO）。它有点像是一个“超级优化版的 PyTorch”。
+Accelerator (Hugging Face accelerate 库): 是一个**“统筹者”或“包装器”**。它的作用是让同一套代码可以运行在 GPU、TPU、多卡、DeepSpeed 等不同环境上。
+在你的代码中：
+self.accelerator 是 accelerate 库的对象。当你在参数里开启 DeepSpeed 时，accelerator 内部 会集成 DeepSpeed。
+通常的写法有两种：
+旧写法（你的代码偏向这种）：手动调用 deepspeed_init，显式管理 DeepSpeed。
+新写法（推荐）：完全不调 deepspeed_init，直接用 model, optim = accelerator.prepare(model, optim)。accelerator 会自动发现你要用 DeepSpeed 并帮你初始化好一切。
+
+### try:用了26736MiB， fp32, 删除Galore微调（否则OOM）   失败，出现分布式通信的问题
+
+在 Hugging Face 的 TrainingArguments 中将 fp16 设置为 True，开启的就是“混合精度训练”（Mixed Precision Training），而不是“纯FP16训练”。
+它的内部工作机制正如你所描述的：“计算用 16位，更新用 32位”。
+
+
+
+
+
+[rank1]: ValueError: Argument `synced_gpus` is not a valid argument of `GenerationConfig`. It should be passed to `generate()` (or a pipeline) directly.
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/dengkn/N-LoRA/src/run_N_lora.py", line 620, in <module>
+[rank0]:     main()
+[rank0]:   File "/home/dengkn/N-LoRA/src/run_N_lora.py", line 597, in main
+[rank0]:     predict_results = trainer.predict(
+[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/trainer_seq2seq.py", line 244, in predict
+[rank0]:     return super().predict(test_dataset, ignore_keys=ignore_keys, metric_key_prefix=metric_key_prefix)
+[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/trainer.py", line 3754, in predict
+[rank0]:     output = eval_loop(
+[rank0]:   File "/home/dengkn/N-LoRA/src/uie_trainer_lora.py", line 203, in evaluation_loop
+[rank0]:     loss, logits, labels = self.prediction_step(model, inputs, prediction_loss_only, ignore_keys=ignore_keys)
+[rank0]:   File "/home/dengkn/N-LoRA/src/uie_trainer_lora.py", line 337, in prediction_step
+[rank0]:     generation_config = GenerationConfig(**gen_kwargs)
+[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/generation/configuration_utils.py", line 453, in __init__
+[rank0]:     self.validate(is_init=True)
+[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/generation/configuration_utils.py", line 725, in validate
+[rank0]:     raise ValueError(
+[rank0]: ValueError: Argument `synced_gpus` is not a valid argument of `GenerationConfig`. It should be passed to `generate()` (or a pipeline) directly.
 
 ## Setup
 
