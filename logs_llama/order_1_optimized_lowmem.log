@@ -1,0 +1,94 @@
++ export CUDA_DEVICE_ORDER=PCI_BUS_ID
++ CUDA_DEVICE_ORDER=PCI_BUS_ID
++ export TRANSFORMERS_CACHE=/home/dengkn/.cache/huggingface
++ TRANSFORMERS_CACHE=/home/dengkn/.cache/huggingface
++ export LC_ALL=en_US.UTF-8
++ LC_ALL=en_US.UTF-8
++ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,max_split_size_mb:128
++ PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,max_split_size_mb:128
++ export PYTORCH_NO_CUDA_MEMORY_CACHING=0
++ PYTORCH_NO_CUDA_MEMORY_CACHING=0
+++ shuf -i25000-30000 -n1
++ port=25551
++ deepspeed --include localhost:0,1 --master_port 25551 src/run_uie_lora.py --do_train --do_predict --predict_with_generate --model_name_or_path initial_model/llama --data_dir CL_Benchmark --task_config_dir configs/order1_configs/dbpedia --instruction_file configs/instruction_config.json --instruction_strategy single --output_dir logs_and_outputs_llama/order_1/outputs_order_1_lowmem/1-dbpedia --per_device_train_batch_size 1 --per_device_eval_batch_size 2 --gradient_accumulation_steps 16 --learning_rate 2e-04 --num_train_epochs 1 --deepspeed configs/ds_configs/stage2_llama.config --run_name order1_round1 --max_source_length 384 --max_target_length 50 --generation_max_length 50 --add_task_name True --add_dataset_name True --overwrite_output_dir --overwrite_cache --lr_scheduler_type constant --warmup_steps 0 --logging_strategy steps --logging_steps 10 --evaluation_strategy no --save_strategy no --save_steps 1500 --lamda_1 0.5 --lamda_2 0 --lora_modules '.*self_attn.(q_proj|v_proj).*' --optim_target_modules '.*mlp.gate_proj.*' --proj_lora_modules '.*self_attn.(q_proj|v_proj).loranew_A.*' --galore_rank 2 --galore_scale 0.25 --galore_lr 1e-06 --gradient_checkpointing True --bf16 True --fp16 False
+[2025-12-15 22:22:43,768] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/utils/hub.py:127: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[2025-12-15 22:22:45,501] [WARNING] [runner.py:212:fetch_hostfile] Unable to find hostfile, will proceed with training with local resources only.
+[2025-12-15 22:22:45,502] [INFO] [runner.py:585:main] cmd = /home/dengkn/miniforge3/envs/aslora/bin/python3.9 -u -m deepspeed.launcher.launch --world_info=eyJsb2NhbGhvc3QiOiBbMCwgMV19 --master_addr=127.0.0.1 --master_port=25551 --enable_each_rank_log=None src/run_uie_lora.py --do_train --do_predict --predict_with_generate --model_name_or_path initial_model/llama --data_dir CL_Benchmark --task_config_dir configs/order1_configs/dbpedia --instruction_file configs/instruction_config.json --instruction_strategy single --output_dir logs_and_outputs_llama/order_1/outputs_order_1_lowmem/1-dbpedia --per_device_train_batch_size 1 --per_device_eval_batch_size 2 --gradient_accumulation_steps 16 --learning_rate 2e-04 --num_train_epochs 1 --deepspeed configs/ds_configs/stage2_llama.config --run_name order1_round1 --max_source_length 384 --max_target_length 50 --generation_max_length 50 --add_task_name True --add_dataset_name True --overwrite_output_dir --overwrite_cache --lr_scheduler_type constant --warmup_steps 0 --logging_strategy steps --logging_steps 10 --evaluation_strategy no --save_strategy no --save_steps 1500 --lamda_1 0.5 --lamda_2 0 --lora_modules .*self_attn.(q_proj|v_proj).* --optim_target_modules .*mlp.gate_proj.* --proj_lora_modules .*self_attn.(q_proj|v_proj).loranew_A.* --galore_rank 2 --galore_scale 0.25 --galore_lr 1e-06 --gradient_checkpointing True --bf16 True --fp16 False
+[2025-12-15 22:22:46,625] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/utils/hub.py:127: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[2025-12-15 22:22:48,385] [INFO] [launch.py:146:main] WORLD INFO DICT: {'localhost': [0, 1]}
+[2025-12-15 22:22:48,385] [INFO] [launch.py:152:main] nnodes=1, num_local_procs=2, node_rank=0
+[2025-12-15 22:22:48,385] [INFO] [launch.py:163:main] global_rank_mapping=defaultdict(<class 'list'>, {'localhost': [0, 1]})
+[2025-12-15 22:22:48,385] [INFO] [launch.py:164:main] dist_world_size=2
+[2025-12-15 22:22:48,385] [INFO] [launch.py:168:main] Setting CUDA_VISIBLE_DEVICES=0,1
+[2025-12-15 22:22:48,410] [INFO] [launch.py:256:main] process 4064612 spawned with command: ['/home/dengkn/miniforge3/envs/aslora/bin/python3.9', '-u', 'src/run_uie_lora.py', '--local_rank=0', '--do_train', '--do_predict', '--predict_with_generate', '--model_name_or_path', 'initial_model/llama', '--data_dir', 'CL_Benchmark', '--task_config_dir', 'configs/order1_configs/dbpedia', '--instruction_file', 'configs/instruction_config.json', '--instruction_strategy', 'single', '--output_dir', 'logs_and_outputs_llama/order_1/outputs_order_1_lowmem/1-dbpedia', '--per_device_train_batch_size', '1', '--per_device_eval_batch_size', '2', '--gradient_accumulation_steps', '16', '--learning_rate', '2e-04', '--num_train_epochs', '1', '--deepspeed', 'configs/ds_configs/stage2_llama.config', '--run_name', 'order1_round1', '--max_source_length', '384', '--max_target_length', '50', '--generation_max_length', '50', '--add_task_name', 'True', '--add_dataset_name', 'True', '--overwrite_output_dir', '--overwrite_cache', '--lr_scheduler_type', 'constant', '--warmup_steps', '0', '--logging_strategy', 'steps', '--logging_steps', '10', '--evaluation_strategy', 'no', '--save_strategy', 'no', '--save_steps', '1500', '--lamda_1', '0.5', '--lamda_2', '0', '--lora_modules', '.*self_attn.(q_proj|v_proj).*', '--optim_target_modules', '.*mlp.gate_proj.*', '--proj_lora_modules', '.*self_attn.(q_proj|v_proj).loranew_A.*', '--galore_rank', '2', '--galore_scale', '0.25', '--galore_lr', '1e-06', '--gradient_checkpointing', 'True', '--bf16', 'True', '--fp16', 'False']
+[2025-12-15 22:22:48,432] [INFO] [launch.py:256:main] process 4064613 spawned with command: ['/home/dengkn/miniforge3/envs/aslora/bin/python3.9', '-u', 'src/run_uie_lora.py', '--local_rank=1', '--do_train', '--do_predict', '--predict_with_generate', '--model_name_or_path', 'initial_model/llama', '--data_dir', 'CL_Benchmark', '--task_config_dir', 'configs/order1_configs/dbpedia', '--instruction_file', 'configs/instruction_config.json', '--instruction_strategy', 'single', '--output_dir', 'logs_and_outputs_llama/order_1/outputs_order_1_lowmem/1-dbpedia', '--per_device_train_batch_size', '1', '--per_device_eval_batch_size', '2', '--gradient_accumulation_steps', '16', '--learning_rate', '2e-04', '--num_train_epochs', '1', '--deepspeed', 'configs/ds_configs/stage2_llama.config', '--run_name', 'order1_round1', '--max_source_length', '384', '--max_target_length', '50', '--generation_max_length', '50', '--add_task_name', 'True', '--add_dataset_name', 'True', '--overwrite_output_dir', '--overwrite_cache', '--lr_scheduler_type', 'constant', '--warmup_steps', '0', '--logging_strategy', 'steps', '--logging_steps', '10', '--evaluation_strategy', 'no', '--save_strategy', 'no', '--save_steps', '1500', '--lamda_1', '0.5', '--lamda_2', '0', '--lora_modules', '.*self_attn.(q_proj|v_proj).*', '--optim_target_modules', '.*mlp.gate_proj.*', '--proj_lora_modules', '.*self_attn.(q_proj|v_proj).loranew_A.*', '--galore_rank', '2', '--galore_scale', '0.25', '--galore_lr', '1e-06', '--gradient_checkpointing', 'True', '--bf16', 'True', '--fp16', 'False']
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/home/dengkn/AS-LoRA/src/run_uie_lora.py", line 32, in <module>
+  File "/home/dengkn/AS-LoRA/src/run_uie_lora.py", line 32, in <module>
+[2025-12-15 22:22:49,956] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 4064612
+        import nltk  # Here to have a nice missing dependency error message early onimport nltk  # Here to have a nice missing dependency error message early on
+
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/nltk/__init__.py", line 133, in <module>
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/nltk/__init__.py", line 133, in <module>
+    from nltk.collocations import *
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/nltk/collocations.py", line 36, in <module>
+    from nltk.collocations import *
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/nltk/collocations.py", line 36, in <module>
+    from nltk.metrics import (
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/nltk/metrics/__init__.py", line 18, in <module>
+    from nltk.metrics import (
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/nltk/metrics/__init__.py", line 18, in <module>
+    from nltk.metrics.association import (
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/nltk/metrics/association.py", line 26, in <module>
+    from nltk.metrics.association import (
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/nltk/metrics/association.py", line 26, in <module>
+        from scipy.stats import fisher_exactfrom scipy.stats import fisher_exact
+
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/scipy/stats/__init__.py", line 606, in <module>
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/scipy/stats/__init__.py", line 607, in <module>
+        from ._stats_py import *from ._variation import variation
+
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/scipy/stats/_stats_py.py", line 571, in <module>
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 982, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 925, in _find_spec
+  File "<frozen importlib._bootstrap_external>", line 1423, in find_spec
+  File "<frozen importlib._bootstrap_external>", line 1395, in _get_spec
+  File "<frozen importlib._bootstrap_external>", line 1522, in find_spec
+  File "<frozen importlib._bootstrap_external>", line 142, in _path_stat
+KeyboardInterrupt
+    def tmean(a, limits=None, inclusive=(True, True), axis=None):
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/scipy/stats/_axis_nan_policy.py", line 608, in axis_nan_policy_decorator
+    doc = FunctionDoc(axis_nan_policy_wrapper)
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/scipy/_lib/_docscrape.py", line 570, in __init__
+    NumpyDocString.__init__(self, doc, config)
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/scipy/_lib/_docscrape.py", line 148, in __init__
+    self._parse()
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/scipy/_lib/_docscrape.py", line 398, in _parse
+    self[section] = self._parse_param_list(content)
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/scipy/_lib/_docscrape.py", line 232, in _parse_param_list
+    desc = dedent_lines(desc)
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/scipy/_lib/_docscrape.py", line 554, in dedent_lines
+    return textwrap.dedent("\n".join(lines)).split("\n")
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/textwrap.py", line 430, in dedent
+    text = _whitespace_only_re.sub('', text)
+KeyboardInterrupt
+[2025-12-15 22:22:50,025] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 4064613
+[2025-12-15 22:22:50,094] [INFO] [launch.py:328:sigkill_handler] Main process received SIGINT, exiting
+Traceback (most recent call last):
+  File "/home/dengkn/miniforge3/envs/aslora/bin/deepspeed", line 6, in <module>
+    main()
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/deepspeed/launcher/runner.py", line 601, in main
+    result.wait()
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/subprocess.py", line 1189, in wait
+    return self._wait(timeout=timeout)
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/subprocess.py", line 1933, in _wait
+    (pid, sts) = self._try_wait(0)
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/subprocess.py", line 1891, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+KeyboardInterrupt
