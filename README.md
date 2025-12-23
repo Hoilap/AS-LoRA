@@ -460,7 +460,7 @@ resume_from_checkpoint (`str` or `bool`, *optional*):
 
 
 
-### deepspeed_init
+### deepspeed_init扫盲
 1. deepspeed_init 会不会自动把 self.model 变成 Engine？
 答案：是的，它应该会（有副作用）。
 deepspeed_init 是 Hugging Face Trainer 内部的一个辅助函数。它的作用流程通常如下：
@@ -471,6 +471,7 @@ deepspeed_init 是 Hugging Face Trainer 内部的一个辅助函数。它的作�
 但是，在你之前的报错中：
 AttributeError: 'LlamaForCausalLM_with_lossmask' object has no attribute 'backward'
 这说明虽然 deepspeed_init 运行了，但在那个特定的时间点，代码引用的对象（self.deepspeed）并没有成功指向 Engine，或者 self.model 被某些后续操作（比如 _wrap_model）又变回了原始模型。
+
 2. DeepSpeed 是 Accelerator 吗？
 不完全是，它们是两层关系。
 DeepSpeed: 是一个优化引擎（Engine）。它直接接管模型的训练、梯度更新、显存管理（ZeRO）。它有点像是一个“超级优化版的 PyTorch”。
@@ -481,34 +482,7 @@ self.accelerator 是 accelerate 库的对象。当你在参数里开启 DeepSpee
 旧写法（你的代码偏向这种）：手动调用 deepspeed_init，显式管理 DeepSpeed。
 新写法（推荐）：完全不调 deepspeed_init，直接用 model, optim = accelerator.prepare(model, optim)。accelerator 会自动发现你要用 DeepSpeed 并帮你初始化好一切。
 
-### try:用了26736MiB， fp32, 删除Galore微调（否则OOM）   失败，出现分布式通信的问题
 
-在 Hugging Face 的 TrainingArguments 中将 fp16 设置为 True，开启的就是“混合精度训练”（Mixed Precision Training），而不是“纯FP16训练”。
-它的内部工作机制正如你所描述的：“计算用 16位，更新用 32位”。
-
-
-
-
-
-[rank1]: ValueError: Argument `synced_gpus` is not a valid argument of `GenerationConfig`. It should be passed to `generate()` (or a pipeline) directly.
-[rank0]: Traceback (most recent call last):
-[rank0]:   File "/home/dengkn/N-LoRA/src/run_N_lora.py", line 620, in <module>
-[rank0]:     main()
-[rank0]:   File "/home/dengkn/N-LoRA/src/run_N_lora.py", line 597, in main
-[rank0]:     predict_results = trainer.predict(
-[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/trainer_seq2seq.py", line 244, in predict
-[rank0]:     return super().predict(test_dataset, ignore_keys=ignore_keys, metric_key_prefix=metric_key_prefix)
-[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/trainer.py", line 3754, in predict
-[rank0]:     output = eval_loop(
-[rank0]:   File "/home/dengkn/N-LoRA/src/uie_trainer_lora.py", line 203, in evaluation_loop
-[rank0]:     loss, logits, labels = self.prediction_step(model, inputs, prediction_loss_only, ignore_keys=ignore_keys)
-[rank0]:   File "/home/dengkn/N-LoRA/src/uie_trainer_lora.py", line 337, in prediction_step
-[rank0]:     generation_config = GenerationConfig(**gen_kwargs)
-[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/generation/configuration_utils.py", line 453, in __init__
-[rank0]:     self.validate(is_init=True)
-[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/generation/configuration_utils.py", line 725, in validate
-[rank0]:     raise ValueError(
-[rank0]: ValueError: Argument `synced_gpus` is not a valid argument of `GenerationConfig`. It should be passed to `generate()` (or a pipeline) directly.
 
 ## Setup
 

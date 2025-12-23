@@ -295,7 +295,8 @@ def main():
     # Detecting last checkpoint.
     last_checkpoint = None
     if os.path.isdir(training_args.output_dir) and training_args.do_train and not training_args.overwrite_output_dir:
-        last_checkpoint = get_last_checkpoint(training_args.output_dir)
+        last_checkpoint = get_last_checkpoint(training_args.output_dir)  
+        
         if last_checkpoint is None and len(os.listdir(training_args.output_dir)) > 0:
             raise ValueError(
                 f"Output directory ({training_args.output_dir}) already exists and is not empty. "
@@ -306,6 +307,8 @@ def main():
                 f"Checkpoint detected, resuming training at {last_checkpoint}. To avoid this behavior, change "
                 "the `--output_dir` or add `--overwrite_output_dir` to train from scratch."
             )
+    print("last_checkpoint:", last_checkpoint) #打印出来的checkpoint是None
+
 
     # Set seed before initializing model.
     set_seed(training_args.seed)
@@ -370,6 +373,7 @@ def main():
             cache_dir=model_args.cache_dir,
             revision=model_args.model_revision,
             use_auth_token=True if model_args.use_auth_token else None,
+            use_safetensors=True  # 尝试添加这一行
         )
         tokenizer = AutoTokenizer.from_pretrained(
             model_args.tokenizer_name if model_args.tokenizer_name else model_args.model_name_or_path,
@@ -389,7 +393,7 @@ def main():
     if 'adapter' in model_args.model_name_or_path: # add lora-adapter to the original model
         model = model_class.from_pretrained(
             config.base_model_name_or_path,
-            torch_dtype=torch.float16 if training_args.fp16 else torch.float32  #新加，权重的加载方式
+            torch_dtype=torch.bfloat16 if training_args.bf16 else (torch.float16 if training_args.fp16 else torch.float32)  #新加，权重的加载方式
         )  #加载 底座模型 的权重 
         model = PeftModel.from_pretrained(model, model_args.model_name_or_path)  #它会在底座模型上，把之前训练好的 LoRA 权重（Adapter）“挂” 上去。
     elif 'llama' in model_args.model_name_or_path.lower():
@@ -400,7 +404,7 @@ def main():
             cache_dir=model_args.cache_dir,
             revision=model_args.model_revision,
             use_auth_token=True if model_args.use_auth_token else None,
-            torch_dtype=torch.float16 if training_args.fp16 else torch.float32
+            torch_dtype=torch.bfloat16 if training_args.bf16 else (torch.float16 if training_args.fp16 else torch.float32)
         )
         peft_config = LoraConfig(
             task_type=TaskType.CAUSAL_LM, inference_mode=False, r=model_args.lora_dim, lora_alpha=32, lora_dropout=0.1, target_modules=training_args.lora_modules
@@ -414,7 +418,7 @@ def main():
             cache_dir=model_args.cache_dir,
             revision=model_args.model_revision,
             use_auth_token=True if model_args.use_auth_token else None,
-            torch_dtype=torch.float16 if training_args.fp16 else torch.float32
+            torch_dtype=torch.bfloat16 if training_args.bf16 else (torch.float16 if training_args.fp16 else torch.float32)
         )
         peft_config = LoraConfig(
             task_type=TaskType.SEQ_2_SEQ_LM, inference_mode=False, r=model_args.lora_dim, lora_alpha=32, lora_dropout=0.1, target_modules=training_args.lora_modules # target_modules=["EncDecAttention.q", "EncDecAttention.v"]
@@ -524,7 +528,7 @@ def main():
         if data_args.max_predict_samples is not None:
             predict_dataset = predict_dataset.select(range(data_args.max_predict_samples))
 
-    # Data collator
+    # Data collator 数据整理器  padding
     label_pad_token_id = -100 if data_args.ignore_pad_token_for_loss else tokenizer.pad_token_id
     data_collator = DataCollatorForUIE(
         tokenizer,
@@ -593,13 +597,16 @@ def main():
             checkpoint = training_args.resume_from_checkpoint
         elif last_checkpoint is not None:
             checkpoint = last_checkpoint
+        
         if 't5' in model_args.model_name_or_path:
             peft_model_id = training_args.output_dir + "/t5_adapter"
         elif 'llama' in model_args.model_name_or_path:
             peft_model_id = training_args.output_dir + "/adapter"
         else:
             raise ValueError("Only support t5 and llama model.")
-        train_result = trainer.train(resume_from_checkpoint=checkpoint, modelpath=peft_model_id)
+
+        train_result = trainer.train(resume_from_checkpoint=checkpoint, modelpath=peft_model_id)   #model path --- IGNORE ---
+        # train_result = trainer.train(resume_from_checkpoint=peft_model_id)
         trainer.model.save_pretrained(peft_model_id, safe_serialization=False)
         tokenizer.save_pretrained(peft_model_id)
 

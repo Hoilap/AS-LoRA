@@ -1,0 +1,550 @@
++ python -c 'import torch; torch.cuda.empty_cache()'
++ export CUDA_DEVICE_ORDER=PCI_BUS_ID
++ CUDA_DEVICE_ORDER=PCI_BUS_ID
++ export TRANSFORMERS_CACHE=/home/dengkn/.cache/huggingface
++ TRANSFORMERS_CACHE=/home/dengkn/.cache/huggingface
++ export LC_ALL=en_US.UTF-8
++ LC_ALL=en_US.UTF-8
++ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,max_split_size_mb:128
++ PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,max_split_size_mb:128
++ export PYTORCH_NO_CUDA_MEMORY_CACHING=0
++ PYTORCH_NO_CUDA_MEMORY_CACHING=0
+++ shuf -i25000-30000 -n1
++ port=27024
++ deepspeed --include localhost:0,1 --master_port 27024 src/run_uie_lora.py --do_train --do_predict --predict_with_generate --model_name_or_path initial_model/llama --data_dir CL_Benchmark --task_config_dir configs/order1_configs/dbpedia --instruction_file configs/instruction_config.json --instruction_strategy single --output_dir logs_and_outputs_llama/order_1/outputs_order_1/1-dbpedia --per_device_train_batch_size 1 --per_device_eval_batch_size 2 --gradient_accumulation_steps 16 --learning_rate 2e-04 --num_train_epochs 1 --deepspeed configs/ds_configs/stage2_llama.config --run_name order1_round1 --max_source_length 384 --max_target_length 50 --generation_max_length 50 --add_task_name True --add_dataset_name True --overwrite_output_dir --overwrite_cache --lr_scheduler_type constant --warmup_steps 0 --logging_strategy steps --logging_steps 10 --evaluation_strategy no --save_strategy no --save_steps 1500 --lamda_1 0.5 --lamda_2 0 --lora_modules '.*self_attn.(q_proj|v_proj).*' --optim_target_modules '.*mlp.gate_proj.*' --proj_lora_modules '.*self_attn.(q_proj|v_proj).loranew_A.*' --galore_rank 2 --galore_scale 0.25 --galore_lr 1e-06 --gradient_checkpointing True --bf16 True --fp16 False
+[2025-12-16 15:50:31,586] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/utils/hub.py:127: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[2025-12-16 15:50:33,449] [WARNING] [runner.py:212:fetch_hostfile] Unable to find hostfile, will proceed with training with local resources only.
+[2025-12-16 15:50:33,449] [INFO] [runner.py:585:main] cmd = /home/dengkn/miniforge3/envs/aslora/bin/python3.9 -u -m deepspeed.launcher.launch --world_info=eyJsb2NhbGhvc3QiOiBbMCwgMV19 --master_addr=127.0.0.1 --master_port=27024 --enable_each_rank_log=None src/run_uie_lora.py --do_train --do_predict --predict_with_generate --model_name_or_path initial_model/llama --data_dir CL_Benchmark --task_config_dir configs/order1_configs/dbpedia --instruction_file configs/instruction_config.json --instruction_strategy single --output_dir logs_and_outputs_llama/order_1/outputs_order_1/1-dbpedia --per_device_train_batch_size 1 --per_device_eval_batch_size 2 --gradient_accumulation_steps 16 --learning_rate 2e-04 --num_train_epochs 1 --deepspeed configs/ds_configs/stage2_llama.config --run_name order1_round1 --max_source_length 384 --max_target_length 50 --generation_max_length 50 --add_task_name True --add_dataset_name True --overwrite_output_dir --overwrite_cache --lr_scheduler_type constant --warmup_steps 0 --logging_strategy steps --logging_steps 10 --evaluation_strategy no --save_strategy no --save_steps 1500 --lamda_1 0.5 --lamda_2 0 --lora_modules .*self_attn.(q_proj|v_proj).* --optim_target_modules .*mlp.gate_proj.* --proj_lora_modules .*self_attn.(q_proj|v_proj).loranew_A.* --galore_rank 2 --galore_scale 0.25 --galore_lr 1e-06 --gradient_checkpointing True --bf16 True --fp16 False
+[2025-12-16 15:50:34,572] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/utils/hub.py:127: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[2025-12-16 15:50:36,281] [INFO] [launch.py:146:main] WORLD INFO DICT: {'localhost': [0, 1]}
+[2025-12-16 15:50:36,281] [INFO] [launch.py:152:main] nnodes=1, num_local_procs=2, node_rank=0
+[2025-12-16 15:50:36,281] [INFO] [launch.py:163:main] global_rank_mapping=defaultdict(<class 'list'>, {'localhost': [0, 1]})
+[2025-12-16 15:50:36,281] [INFO] [launch.py:164:main] dist_world_size=2
+[2025-12-16 15:50:36,281] [INFO] [launch.py:168:main] Setting CUDA_VISIBLE_DEVICES=0,1
+[2025-12-16 15:50:36,307] [INFO] [launch.py:256:main] process 21349 spawned with command: ['/home/dengkn/miniforge3/envs/aslora/bin/python3.9', '-u', 'src/run_uie_lora.py', '--local_rank=0', '--do_train', '--do_predict', '--predict_with_generate', '--model_name_or_path', 'initial_model/llama', '--data_dir', 'CL_Benchmark', '--task_config_dir', 'configs/order1_configs/dbpedia', '--instruction_file', 'configs/instruction_config.json', '--instruction_strategy', 'single', '--output_dir', 'logs_and_outputs_llama/order_1/outputs_order_1/1-dbpedia', '--per_device_train_batch_size', '1', '--per_device_eval_batch_size', '2', '--gradient_accumulation_steps', '16', '--learning_rate', '2e-04', '--num_train_epochs', '1', '--deepspeed', 'configs/ds_configs/stage2_llama.config', '--run_name', 'order1_round1', '--max_source_length', '384', '--max_target_length', '50', '--generation_max_length', '50', '--add_task_name', 'True', '--add_dataset_name', 'True', '--overwrite_output_dir', '--overwrite_cache', '--lr_scheduler_type', 'constant', '--warmup_steps', '0', '--logging_strategy', 'steps', '--logging_steps', '10', '--evaluation_strategy', 'no', '--save_strategy', 'no', '--save_steps', '1500', '--lamda_1', '0.5', '--lamda_2', '0', '--lora_modules', '.*self_attn.(q_proj|v_proj).*', '--optim_target_modules', '.*mlp.gate_proj.*', '--proj_lora_modules', '.*self_attn.(q_proj|v_proj).loranew_A.*', '--galore_rank', '2', '--galore_scale', '0.25', '--galore_lr', '1e-06', '--gradient_checkpointing', 'True', '--bf16', 'True', '--fp16', 'False']
+[2025-12-16 15:50:36,330] [INFO] [launch.py:256:main] process 21350 spawned with command: ['/home/dengkn/miniforge3/envs/aslora/bin/python3.9', '-u', 'src/run_uie_lora.py', '--local_rank=1', '--do_train', '--do_predict', '--predict_with_generate', '--model_name_or_path', 'initial_model/llama', '--data_dir', 'CL_Benchmark', '--task_config_dir', 'configs/order1_configs/dbpedia', '--instruction_file', 'configs/instruction_config.json', '--instruction_strategy', 'single', '--output_dir', 'logs_and_outputs_llama/order_1/outputs_order_1/1-dbpedia', '--per_device_train_batch_size', '1', '--per_device_eval_batch_size', '2', '--gradient_accumulation_steps', '16', '--learning_rate', '2e-04', '--num_train_epochs', '1', '--deepspeed', 'configs/ds_configs/stage2_llama.config', '--run_name', 'order1_round1', '--max_source_length', '384', '--max_target_length', '50', '--generation_max_length', '50', '--add_task_name', 'True', '--add_dataset_name', 'True', '--overwrite_output_dir', '--overwrite_cache', '--lr_scheduler_type', 'constant', '--warmup_steps', '0', '--logging_strategy', 'steps', '--logging_steps', '10', '--evaluation_strategy', 'no', '--save_strategy', 'no', '--save_steps', '1500', '--lamda_1', '0.5', '--lamda_2', '0', '--lora_modules', '.*self_attn.(q_proj|v_proj).*', '--optim_target_modules', '.*mlp.gate_proj.*', '--proj_lora_modules', '.*self_attn.(q_proj|v_proj).loranew_A.*', '--galore_rank', '2', '--galore_scale', '0.25', '--galore_lr', '1e-06', '--gradient_checkpointing', 'True', '--bf16', 'True', '--fp16', 'False']
+[2025-12-16 15:50:38,964] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-12-16 15:50:38,975] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-12-16 15:50:40,253] [INFO] [comm.py:652:init_distributed] cdb=None
+[2025-12-16 15:50:40,253] [INFO] [comm.py:683:init_distributed] Initializing TorchBackend in DeepSpeed with backend nccl
+[2025-12-16 15:50:40,280] [INFO] [comm.py:652:init_distributed] cdb=None
+12/16/2025 15:50:40 - WARNING - __main__ - According to arugements, Process rank: 1, device: cuda:1, n_gpu: 1distributed training: True, 16-bits training: False
+last_checkpoint: None
+
+######################
+lora=gpfirst,
+galore=gpfirst,
+lorarank=8,
+lr=0.0002,
+galorerank=2
+galore lr=1e-06
+######################
+
+12/16/2025 15:50:40 - WARNING - __main__ - According to arugements, Process rank: 0, device: cuda:0, n_gpu: 1distributed training: True, 16-bits training: False
+last_checkpoint: None
+normalizer.cc(51) LOG(INFO) precompiled_charsmap is empty. use identity normalization.
+normalizer.cc(51) LOG(INFO) precompiled_charsmap is empty. use identity normalization.
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:01,  1.58it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:01,  1.21it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:01<00:00,  1.63it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:01<00:00,  1.40it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.77it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.73it/s]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.68it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.57it/s]
+trainable params: 1447034880 || all params: 6742609920 || trainable%: 21.461049907511185
+12/16/2025 15:50:50 - WARNING - __main__ - 
+============================================================
+12/16/2025 15:50:50 - WARNING - __main__ - 模型参数精度验证:
+12/16/2025 15:50:50 - WARNING - __main__ - ============================================================
+12/16/2025 15:50:50 - WARNING - __main__ -   bfloat16: 291 个参数
+12/16/2025 15:50:50 - WARNING - __main__ -     示例参数: ['base_model.model.model.embed_tokens.weight', 'base_model.model.model.layers.0.self_attn.q_proj.weight', 'base_model.model.model.layers.0.self_attn.k_proj.weight']
+12/16/2025 15:50:50 - WARNING - __main__ -   float32: 256 个参数
+12/16/2025 15:50:50 - WARNING - __main__ -     示例参数: ['base_model.model.model.layers.0.self_attn.q_proj.lora_A.default.weight', 'base_model.model.model.layers.0.self_attn.q_proj.lora_B.default.weight', 'base_model.model.model.layers.0.self_attn.q_proj.loranew_A.default.weight']
+12/16/2025 15:50:50 - WARNING - __main__ - ============================================================
+
+12/16/2025 15:50:50 - WARNING - __main__ - ✓ 第一个参数精度: torch.bfloat16
+12/16/2025 15:50:50 - WARNING - __main__ - ✓ 第一个参数设备: cpu
+
+-----Gradient checkpointing: True -----
+trainable params: 1447034880 || all params: 6742609920 || trainable%: 21.461049907511185
+-----Gradient checkpointing: True -----
+move model to device: cuda:0
+move model to device: cuda:1
+resume_from_checkpoint: None
+TRAINER_STATE_NAME: trainer_state.json
+resume_from_checkpoint: None
+TRAINER_STATE_NAME: trainer_state.json
+[WARNING|logging.py:328] 2025-12-16 15:51:06,979 >> `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+  0%|          | 0/437 [00:00<?, ?it/s][WARNING|logging.py:328] 2025-12-16 15:51:07,071 >> `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/home/dengkn/AS-LoRA/src/run_uie_lora.py", line 674, in <module>
+[rank1]:     main()
+[rank1]:   File "/home/dengkn/AS-LoRA/src/run_uie_lora.py", line 607, in main
+[rank1]:     train_result = trainer.train(resume_from_checkpoint=checkpoint, modelpath=peft_model_id)   #model path --- IGNORE ---
+[rank1]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 401, in train
+[rank1]:     return inner_training_loop(
+[rank1]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 763, in _inner_training_loop
+[rank1]:     tr_loss_step = self.training_step(model, inputs, init_weights)
+[rank1]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 1026, in training_step
+[rank1]:     loss.backward()
+[rank1]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/_tensor.py", line 647, in backward
+[rank1]:     torch.autograd.backward(
+[rank1]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/autograd/__init__.py", line 354, in backward
+[rank1]:     _engine_run_backward(
+[rank1]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/autograd/graph.py", line 829, in _engine_run_backward
+[rank1]:     return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+[rank1]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/autograd/function.py", line 311, in apply
+[rank1]:     return user_fn(self, *args)
+[rank1]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/utils/checkpoint.py", line 319, in backward
+[rank1]:     torch.autograd.backward(outputs_with_grad, args_with_grad)
+[rank1]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/autograd/__init__.py", line 354, in backward
+[rank1]:     _engine_run_backward(
+[rank1]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/autograd/graph.py", line 829, in _engine_run_backward
+[rank1]:     return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+[rank1]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 86.00 MiB. GPU 1 has a total capacity of 44.40 GiB of which 38.81 MiB is free. Including non-PyTorch memory, this process has 44.34 GiB memory in use. Of the allocated memory 43.80 GiB is allocated by PyTorch, and 37.52 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/dengkn/AS-LoRA/src/run_uie_lora.py", line 674, in <module>
+[rank0]:     main()
+[rank0]:   File "/home/dengkn/AS-LoRA/src/run_uie_lora.py", line 607, in main
+[rank0]:     train_result = trainer.train(resume_from_checkpoint=checkpoint, modelpath=peft_model_id)   #model path --- IGNORE ---
+[rank0]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 401, in train
+[rank0]:     return inner_training_loop(
+[rank0]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 763, in _inner_training_loop
+[rank0]:     tr_loss_step = self.training_step(model, inputs, init_weights)
+[rank0]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 1026, in training_step
+[rank0]:     loss.backward()
+[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/_tensor.py", line 647, in backward
+[rank0]:     torch.autograd.backward(
+[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/autograd/__init__.py", line 354, in backward
+[rank0]:     _engine_run_backward(
+[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/autograd/graph.py", line 829, in _engine_run_backward
+[rank0]:     return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/autograd/function.py", line 311, in apply
+[rank0]:     return user_fn(self, *args)
+[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/utils/checkpoint.py", line 319, in backward
+[rank0]:     torch.autograd.backward(outputs_with_grad, args_with_grad)
+[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/autograd/__init__.py", line 354, in backward
+[rank0]:     _engine_run_backward(
+[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/autograd/graph.py", line 829, in _engine_run_backward
+[rank0]:     return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+[rank0]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 86.00 MiB. GPU 0 has a total capacity of 44.40 GiB of which 16.81 MiB is free. Including non-PyTorch memory, this process has 44.37 GiB memory in use. Of the allocated memory 43.79 GiB is allocated by PyTorch, and 72.88 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+  0%|          | 0/437 [00:02<?, ?it/s]
+[rank0]:[W1216 15:51:09.998245081 ProcessGroupNCCL.cpp:1538] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[2025-12-16 15:51:10,367] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 21349
+[2025-12-16 15:51:10,411] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 21350
+[2025-12-16 15:51:10,411] [ERROR] [launch.py:325:sigkill_handler] ['/home/dengkn/miniforge3/envs/aslora/bin/python3.9', '-u', 'src/run_uie_lora.py', '--local_rank=1', '--do_train', '--do_predict', '--predict_with_generate', '--model_name_or_path', 'initial_model/llama', '--data_dir', 'CL_Benchmark', '--task_config_dir', 'configs/order1_configs/dbpedia', '--instruction_file', 'configs/instruction_config.json', '--instruction_strategy', 'single', '--output_dir', 'logs_and_outputs_llama/order_1/outputs_order_1/1-dbpedia', '--per_device_train_batch_size', '1', '--per_device_eval_batch_size', '2', '--gradient_accumulation_steps', '16', '--learning_rate', '2e-04', '--num_train_epochs', '1', '--deepspeed', 'configs/ds_configs/stage2_llama.config', '--run_name', 'order1_round1', '--max_source_length', '384', '--max_target_length', '50', '--generation_max_length', '50', '--add_task_name', 'True', '--add_dataset_name', 'True', '--overwrite_output_dir', '--overwrite_cache', '--lr_scheduler_type', 'constant', '--warmup_steps', '0', '--logging_strategy', 'steps', '--logging_steps', '10', '--evaluation_strategy', 'no', '--save_strategy', 'no', '--save_steps', '1500', '--lamda_1', '0.5', '--lamda_2', '0', '--lora_modules', '.*self_attn.(q_proj|v_proj).*', '--optim_target_modules', '.*mlp.gate_proj.*', '--proj_lora_modules', '.*self_attn.(q_proj|v_proj).loranew_A.*', '--galore_rank', '2', '--galore_scale', '0.25', '--galore_lr', '1e-06', '--gradient_checkpointing', 'True', '--bf16', 'True', '--fp16', 'False'] exits with return code = 1
++ sleep 5
++ deepspeed --include localhost:0,1 --master_port 27024 src/run_uie_lora.py --do_train --do_predict --predict_with_generate --model_name_or_path logs_and_outputs_llama/order_1/outputs_order_1/1-dbpedia/adapter --data_dir CL_Benchmark --task_config_dir configs/order1_configs/amazon --instruction_file configs/instruction_config.json --instruction_strategy single --output_dir logs_and_outputs_llama/order_1/outputs_order_1/2-amazon --per_device_train_batch_size 1 --per_device_eval_batch_size 2 --gradient_accumulation_steps 8 --learning_rate 2e-04 --num_train_epochs 1 --deepspeed configs/ds_configs/stage2_llama.config --run_name order1_round2 --max_source_length 512 --max_target_length 50 --generation_max_length 50 --add_task_name True --add_dataset_name True --overwrite_output_dir --overwrite_cache --lr_scheduler_type constant --warmup_steps 0 --logging_strategy steps --logging_steps 10 --evaluation_strategy no --save_strategy no --save_steps 1500 --lamda_1 0.5 --lamda_2 0 --lora_modules '.*self_attn.(q_proj|v_proj).*' --optim_target_modules '.*mlp.gate_proj.*' --proj_lora_modules '.*self_attn.(q_proj|v_proj).loranew_A.*' --galore_rank 2 --galore_scale 0.25 --galore_lr 1e-06 --gradient_checkpointing True --bf16 True --fp16 False
+[2025-12-16 15:51:17,886] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/utils/hub.py:127: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[2025-12-16 15:51:19,677] [WARNING] [runner.py:212:fetch_hostfile] Unable to find hostfile, will proceed with training with local resources only.
+[2025-12-16 15:51:19,677] [INFO] [runner.py:585:main] cmd = /home/dengkn/miniforge3/envs/aslora/bin/python3.9 -u -m deepspeed.launcher.launch --world_info=eyJsb2NhbGhvc3QiOiBbMCwgMV19 --master_addr=127.0.0.1 --master_port=27024 --enable_each_rank_log=None src/run_uie_lora.py --do_train --do_predict --predict_with_generate --model_name_or_path logs_and_outputs_llama/order_1/outputs_order_1/1-dbpedia/adapter --data_dir CL_Benchmark --task_config_dir configs/order1_configs/amazon --instruction_file configs/instruction_config.json --instruction_strategy single --output_dir logs_and_outputs_llama/order_1/outputs_order_1/2-amazon --per_device_train_batch_size 1 --per_device_eval_batch_size 2 --gradient_accumulation_steps 8 --learning_rate 2e-04 --num_train_epochs 1 --deepspeed configs/ds_configs/stage2_llama.config --run_name order1_round2 --max_source_length 512 --max_target_length 50 --generation_max_length 50 --add_task_name True --add_dataset_name True --overwrite_output_dir --overwrite_cache --lr_scheduler_type constant --warmup_steps 0 --logging_strategy steps --logging_steps 10 --evaluation_strategy no --save_strategy no --save_steps 1500 --lamda_1 0.5 --lamda_2 0 --lora_modules .*self_attn.(q_proj|v_proj).* --optim_target_modules .*mlp.gate_proj.* --proj_lora_modules .*self_attn.(q_proj|v_proj).loranew_A.* --galore_rank 2 --galore_scale 0.25 --galore_lr 1e-06 --gradient_checkpointing True --bf16 True --fp16 False
+[2025-12-16 15:51:20,803] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/utils/hub.py:127: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[2025-12-16 15:51:22,601] [INFO] [launch.py:146:main] WORLD INFO DICT: {'localhost': [0, 1]}
+[2025-12-16 15:51:22,601] [INFO] [launch.py:152:main] nnodes=1, num_local_procs=2, node_rank=0
+[2025-12-16 15:51:22,601] [INFO] [launch.py:163:main] global_rank_mapping=defaultdict(<class 'list'>, {'localhost': [0, 1]})
+[2025-12-16 15:51:22,601] [INFO] [launch.py:164:main] dist_world_size=2
+[2025-12-16 15:51:22,601] [INFO] [launch.py:168:main] Setting CUDA_VISIBLE_DEVICES=0,1
+[2025-12-16 15:51:22,628] [INFO] [launch.py:256:main] process 22054 spawned with command: ['/home/dengkn/miniforge3/envs/aslora/bin/python3.9', '-u', 'src/run_uie_lora.py', '--local_rank=0', '--do_train', '--do_predict', '--predict_with_generate', '--model_name_or_path', 'logs_and_outputs_llama/order_1/outputs_order_1/1-dbpedia/adapter', '--data_dir', 'CL_Benchmark', '--task_config_dir', 'configs/order1_configs/amazon', '--instruction_file', 'configs/instruction_config.json', '--instruction_strategy', 'single', '--output_dir', 'logs_and_outputs_llama/order_1/outputs_order_1/2-amazon', '--per_device_train_batch_size', '1', '--per_device_eval_batch_size', '2', '--gradient_accumulation_steps', '8', '--learning_rate', '2e-04', '--num_train_epochs', '1', '--deepspeed', 'configs/ds_configs/stage2_llama.config', '--run_name', 'order1_round2', '--max_source_length', '512', '--max_target_length', '50', '--generation_max_length', '50', '--add_task_name', 'True', '--add_dataset_name', 'True', '--overwrite_output_dir', '--overwrite_cache', '--lr_scheduler_type', 'constant', '--warmup_steps', '0', '--logging_strategy', 'steps', '--logging_steps', '10', '--evaluation_strategy', 'no', '--save_strategy', 'no', '--save_steps', '1500', '--lamda_1', '0.5', '--lamda_2', '0', '--lora_modules', '.*self_attn.(q_proj|v_proj).*', '--optim_target_modules', '.*mlp.gate_proj.*', '--proj_lora_modules', '.*self_attn.(q_proj|v_proj).loranew_A.*', '--galore_rank', '2', '--galore_scale', '0.25', '--galore_lr', '1e-06', '--gradient_checkpointing', 'True', '--bf16', 'True', '--fp16', 'False']
+[2025-12-16 15:51:22,651] [INFO] [launch.py:256:main] process 22055 spawned with command: ['/home/dengkn/miniforge3/envs/aslora/bin/python3.9', '-u', 'src/run_uie_lora.py', '--local_rank=1', '--do_train', '--do_predict', '--predict_with_generate', '--model_name_or_path', 'logs_and_outputs_llama/order_1/outputs_order_1/1-dbpedia/adapter', '--data_dir', 'CL_Benchmark', '--task_config_dir', 'configs/order1_configs/amazon', '--instruction_file', 'configs/instruction_config.json', '--instruction_strategy', 'single', '--output_dir', 'logs_and_outputs_llama/order_1/outputs_order_1/2-amazon', '--per_device_train_batch_size', '1', '--per_device_eval_batch_size', '2', '--gradient_accumulation_steps', '8', '--learning_rate', '2e-04', '--num_train_epochs', '1', '--deepspeed', 'configs/ds_configs/stage2_llama.config', '--run_name', 'order1_round2', '--max_source_length', '512', '--max_target_length', '50', '--generation_max_length', '50', '--add_task_name', 'True', '--add_dataset_name', 'True', '--overwrite_output_dir', '--overwrite_cache', '--lr_scheduler_type', 'constant', '--warmup_steps', '0', '--logging_strategy', 'steps', '--logging_steps', '10', '--evaluation_strategy', 'no', '--save_strategy', 'no', '--save_steps', '1500', '--lamda_1', '0.5', '--lamda_2', '0', '--lora_modules', '.*self_attn.(q_proj|v_proj).*', '--optim_target_modules', '.*mlp.gate_proj.*', '--proj_lora_modules', '.*self_attn.(q_proj|v_proj).loranew_A.*', '--galore_rank', '2', '--galore_scale', '0.25', '--galore_lr', '1e-06', '--gradient_checkpointing', 'True', '--bf16', 'True', '--fp16', 'False']
+[2025-12-16 15:51:25,239] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-12-16 15:51:25,260] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-12-16 15:51:26,650] [INFO] [comm.py:652:init_distributed] cdb=None
+[2025-12-16 15:51:26,655] [INFO] [comm.py:652:init_distributed] cdb=None
+[2025-12-16 15:51:26,655] [INFO] [comm.py:683:init_distributed] Initializing TorchBackend in DeepSpeed with backend nccl
+12/16/2025 15:51:27 - WARNING - __main__ - According to arugements, Process rank: 1, device: cuda:1, n_gpu: 1distributed training: True, 16-bits training: False
+last_checkpoint: None
+
+######################
+lora=gpfirst,
+galore=gpfirst,
+lorarank=8,
+lr=0.0002,
+galorerank=2
+galore lr=1e-06
+######################
+
+12/16/2025 15:51:27 - WARNING - __main__ - According to arugements, Process rank: 0, device: cuda:0, n_gpu: 1distributed training: True, 16-bits training: False
+last_checkpoint: None
+normalizer.cc(51) LOG(INFO) precompiled_charsmap is empty. use identity normalization.
+normalizer.cc(51) LOG(INFO) precompiled_charsmap is empty. use identity normalization.
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:01,  1.46it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:01,  1.24it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:01<00:00,  1.60it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:01<00:00,  1.38it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.76it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.70it/s]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.66it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.55it/s]
+trainable params: 1447034880 || all params: 6746804224 || trainable%: 21.44770815866496
+-----Gradient checkpointing: True -----
+trainable params: 1447034880 || all params: 6746804224 || trainable%: 21.44770815866496
+12/16/2025 15:51:37 - WARNING - __main__ - 
+============================================================
+12/16/2025 15:51:37 - WARNING - __main__ - 模型参数精度验证:
+12/16/2025 15:51:37 - WARNING - __main__ - ============================================================
+12/16/2025 15:51:37 - WARNING - __main__ -   bfloat16: 291 个参数
+12/16/2025 15:51:37 - WARNING - __main__ -     示例参数: ['base_model.model.model.embed_tokens.weight', 'base_model.model.model.layers.0.self_attn.q_proj.weight', 'base_model.model.model.layers.0.self_attn.k_proj.weight']
+12/16/2025 15:51:37 - WARNING - __main__ -   float32: 256 个参数
+12/16/2025 15:51:37 - WARNING - __main__ -     示例参数: ['base_model.model.model.layers.0.self_attn.q_proj.lora_A.default.weight', 'base_model.model.model.layers.0.self_attn.q_proj.lora_B.default.weight', 'base_model.model.model.layers.0.self_attn.q_proj.loranew_A.default.weight']
+12/16/2025 15:51:37 - WARNING - __main__ - ============================================================
+
+12/16/2025 15:51:37 - WARNING - __main__ - ✓ 第一个参数精度: torch.bfloat16
+12/16/2025 15:51:37 - WARNING - __main__ - ✓ 第一个参数设备: cpu
+
+-----Gradient checkpointing: True -----
+move model to device: cuda:1
+move model to device: cuda:0
+resume_from_checkpoint: None
+TRAINER_STATE_NAME: trainer_state.json
+[WARNING|logging.py:328] 2025-12-16 15:51:43,521 >> `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+resume_from_checkpoint: None
+TRAINER_STATE_NAME: trainer_state.json
+  0%|          | 0/312 [00:00<?, ?it/s][WARNING|logging.py:328] 2025-12-16 15:51:44,078 >> `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+  0%|          | 1/312 [01:24<7:20:00, 84.89s/it]  1%|          | 2/312 [01:25<3:03:48, 35.58s/it]  1%|          | 3/312 [01:26<1:42:00, 19.81s/it]  1%|▏         | 4/312 [01:28<1:03:58, 12.46s/it]  2%|▏         | 5/312 [01:29<42:41,  8.34s/it]    2%|▏         | 6/312 [01:30<30:05,  5.90s/it]  2%|▏         | 7/312 [01:31<21:49,  4.29s/it]  3%|▎         | 8/312 [01:32<16:26,  3.24s/it]  3%|▎         | 9/312 [01:33<12:57,  2.57s/it]  3%|▎         | 10/312 [01:34<10:42,  2.13s/it]                                                {'loss': 2.0692, 'learning_rate': 0.0002, 'epoch': 0.03}
+  3%|▎         | 10/312 [01:34<10:42,  2.13s/it]  4%|▎         | 11/312 [01:35<09:10,  1.83s/it]  4%|▍         | 12/312 [01:36<08:06,  1.62s/it]  4%|▍         | 13/312 [01:38<07:21,  1.48s/it]  4%|▍         | 14/312 [01:39<06:38,  1.34s/it]  5%|▍         | 15/312 [01:40<06:10,  1.25s/it]  5%|▌         | 16/312 [01:41<05:57,  1.21s/it]  5%|▌         | 17/312 [01:42<05:44,  1.17s/it]  6%|▌         | 18/312 [01:43<05:33,  1.13s/it]  6%|▌         | 19/312 [01:44<05:28,  1.12s/it]  6%|▋         | 20/312 [01:45<05:19,  1.09s/it]                                                {'loss': 1.9635, 'learning_rate': 0.0002, 'epoch': 0.06}
+  6%|▋         | 20/312 [01:45<05:19,  1.09s/it]  7%|▋         | 21/312 [03:11<2:08:25, 26.48s/it]  7%|▋         | 22/312 [03:12<1:31:12, 18.87s/it]  7%|▋         | 23/312 [03:13<1:05:06, 13.52s/it]  8%|▊         | 24/312 [03:14<47:11,  9.83s/it]    8%|▊         | 25/312 [03:15<34:42,  7.26s/it]  8%|▊         | 26/312 [03:16<25:55,  5.44s/it]  9%|▊         | 27/312 [03:17<19:30,  4.11s/it]  9%|▉         | 28/312 [03:19<15:15,  3.22s/it]  9%|▉         | 29/312 [03:20<12:04,  2.56s/it] 10%|▉         | 30/312 [03:21<09:57,  2.12s/it]                                                {'loss': 1.6799, 'learning_rate': 0.0002, 'epoch': 0.1}
+ 10%|▉         | 30/312 [03:21<09:57,  2.12s/it] 10%|▉         | 31/312 [03:22<08:30,  1.82s/it] 10%|█         | 32/312 [03:23<07:33,  1.62s/it] 11%|█         | 33/312 [03:24<06:51,  1.47s/it] 11%|█         | 34/312 [03:25<06:17,  1.36s/it] 11%|█         | 35/312 [03:26<05:54,  1.28s/it] 12%|█▏        | 36/312 [03:27<05:35,  1.22s/it] 12%|█▏        | 37/312 [03:28<05:20,  1.17s/it] 12%|█▏        | 38/312 [03:30<05:20,  1.17s/it] 12%|█▎        | 39/312 [03:31<05:22,  1.18s/it] 13%|█▎        | 40/312 [03:32<05:20,  1.18s/it]                                                {'loss': 1.6609, 'learning_rate': 0.0002, 'epoch': 0.13}
+ 13%|█▎        | 40/312 [03:32<05:20,  1.18s/it] 13%|█▎        | 41/312 [04:57<1:58:44, 26.29s/it] 13%|█▎        | 42/312 [04:58<1:24:23, 18.75s/it] 14%|█▍        | 43/312 [04:59<1:00:20, 13.46s/it] 14%|█▍        | 44/312 [05:00<43:30,  9.74s/it]   14%|█▍        | 45/312 [05:01<31:51,  7.16s/it] 15%|█▍        | 46/312 [05:02<23:35,  5.32s/it] 15%|█▌        | 47/312 [05:03<17:51,  4.04s/it] 15%|█▌        | 48/312 [05:04<13:48,  3.14s/it] 16%|█▌        | 49/312 [05:06<11:01,  2.52s/it] 16%|█▌        | 50/312 [05:07<08:58,  2.06s/it]                                                {'loss': 1.5835, 'learning_rate': 0.0002, 'epoch': 0.16}
+ 16%|█▌        | 50/312 [05:07<08:58,  2.06s/it] 16%|█▋        | 51/312 [05:08<07:44,  1.78s/it] 17%|█▋        | 52/312 [05:09<06:53,  1.59s/it] 17%|█▋        | 53/312 [05:10<06:22,  1.48s/it] 17%|█▋        | 54/312 [05:11<05:41,  1.32s/it] 18%|█▊        | 55/312 [05:12<05:18,  1.24s/it] 18%|█▊        | 56/312 [05:13<05:04,  1.19s/it] 18%|█▊        | 57/312 [05:14<04:51,  1.14s/it] 19%|█▊        | 58/312 [05:15<04:49,  1.14s/it] 19%|█▉        | 59/312 [05:16<04:45,  1.13s/it] 19%|█▉        | 60/312 [05:18<04:45,  1.13s/it]                                                {'loss': 1.7462, 'learning_rate': 0.0002, 'epoch': 0.19}
+ 19%|█▉        | 60/312 [05:18<04:45,  1.13s/it] 20%|█▉        | 61/312 [06:42<1:49:54, 26.27s/it] 20%|█▉        | 62/312 [06:44<1:18:06, 18.74s/it] 20%|██        | 63/312 [06:45<55:47, 13.44s/it]   21%|██        | 64/312 [06:46<40:17,  9.75s/it] 21%|██        | 65/312 [06:47<29:27,  7.16s/it] 21%|██        | 66/312 [06:48<21:55,  5.35s/it] 21%|██▏       | 67/312 [06:49<16:37,  4.07s/it] 22%|██▏       | 68/312 [06:50<12:55,  3.18s/it] 22%|██▏       | 69/312 [06:51<10:21,  2.56s/it] 22%|██▏       | 70/312 [06:52<08:32,  2.12s/it]                                                {'loss': 1.5757, 'learning_rate': 0.0002, 'epoch': 0.22}
+ 22%|██▏       | 70/312 [06:52<08:32,  2.12s/it] 23%|██▎       | 71/312 [06:53<07:10,  1.79s/it] 23%|██▎       | 72/312 [06:55<06:20,  1.58s/it] 23%|██▎       | 73/312 [06:56<05:44,  1.44s/it] 24%|██▎       | 74/312 [06:57<05:14,  1.32s/it] 24%|██▍       | 75/312 [06:58<05:08,  1.30s/it] 24%|██▍       | 76/312 [06:59<04:54,  1.25s/it] 25%|██▍       | 77/312 [07:00<04:48,  1.23s/it] 25%|██▌       | 78/312 [07:01<04:34,  1.17s/it] 25%|██▌       | 79/312 [07:02<04:29,  1.16s/it] 26%|██▌       | 80/312 [07:04<04:21,  1.13s/it]                                                {'loss': 1.8401, 'learning_rate': 0.0002, 'epoch': 0.26}
+ 26%|██▌       | 80/312 [07:04<04:21,  1.13s/it] 26%|██▌       | 81/312 [08:28<1:40:49, 26.19s/it] 26%|██▋       | 82/312 [08:29<1:11:29, 18.65s/it] 27%|██▋       | 83/312 [08:30<51:03, 13.38s/it]   27%|██▋       | 84/312 [08:31<36:50,  9.69s/it] 27%|██▋       | 85/312 [08:32<26:54,  7.11s/it] 28%|██▊       | 86/312 [08:34<19:57,  5.30s/it] 28%|██▊       | 87/312 [08:35<15:13,  4.06s/it] 28%|██▊       | 88/312 [08:36<11:45,  3.15s/it] 29%|██▊       | 89/312 [08:37<09:30,  2.56s/it] 29%|██▉       | 90/312 [08:38<07:52,  2.13s/it]                                                {'loss': 1.5598, 'learning_rate': 0.0002, 'epoch': 0.29}
+ 29%|██▉       | 90/312 [08:38<07:52,  2.13s/it] 29%|██▉       | 91/312 [08:39<06:46,  1.84s/it] 29%|██▉       | 92/312 [08:40<05:55,  1.61s/it] 30%|██▉       | 93/312 [08:41<05:17,  1.45s/it] 30%|███       | 94/312 [08:43<04:56,  1.36s/it] 30%|███       | 95/312 [08:44<04:34,  1.27s/it] 31%|███       | 96/312 [08:45<04:18,  1.20s/it] 31%|███       | 97/312 [08:46<04:12,  1.17s/it] 31%|███▏      | 98/312 [08:47<04:02,  1.13s/it] 32%|███▏      | 99/312 [08:48<03:56,  1.11s/it] 32%|███▏      | 100/312 [08:49<03:59,  1.13s/it]                                                 {'loss': 1.6355, 'learning_rate': 0.0002, 'epoch': 0.32}
+ 32%|███▏      | 100/312 [08:49<03:59,  1.13s/it] 32%|███▏      | 101/312 [10:14<1:32:59, 26.44s/it] 33%|███▎      | 102/312 [10:16<1:05:53, 18.82s/it] 33%|███▎      | 103/312 [10:17<47:12, 13.55s/it]   33%|███▎      | 104/312 [10:18<33:58,  9.80s/it] 34%|███▎      | 105/312 [10:19<24:51,  7.21s/it] 34%|███▍      | 106/312 [10:20<18:29,  5.38s/it] 34%|███▍      | 107/312 [10:21<13:59,  4.09s/it] 35%|███▍      | 108/312 [10:22<10:51,  3.20s/it] 35%|███▍      | 109/312 [10:23<08:43,  2.58s/it] 35%|███▌      | 110/312 [10:24<07:07,  2.12s/it]                                                 {'loss': 1.5748, 'learning_rate': 0.0002, 'epoch': 0.35}
+ 35%|███▌      | 110/312 [10:25<07:07,  2.12s/it] 36%|███▌      | 111/312 [10:26<06:06,  1.82s/it] 36%|███▌      | 112/312 [10:27<05:16,  1.58s/it] 36%|███▌      | 113/312 [10:28<04:41,  1.41s/it] 37%|███▋      | 114/312 [10:29<04:17,  1.30s/it] 37%|███▋      | 115/312 [10:30<04:06,  1.25s/it] 37%|███▋      | 116/312 [10:31<03:56,  1.21s/it] 38%|███▊      | 117/312 [10:32<03:41,  1.14s/it] 38%|███▊      | 118/312 [10:33<03:35,  1.11s/it] 38%|███▊      | 119/312 [10:34<03:41,  1.15s/it] 38%|███▊      | 120/312 [10:35<03:37,  1.13s/it]                                                 {'loss': 1.4525, 'learning_rate': 0.0002, 'epoch': 0.38}
+ 38%|███▊      | 120/312 [10:35<03:37,  1.13s/it] 39%|███▉      | 121/312 [12:00<1:23:51, 26.34s/it] 39%|███▉      | 122/312 [12:02<59:31, 18.80s/it]   39%|███▉      | 123/312 [12:03<42:37, 13.53s/it] 40%|███▉      | 124/312 [12:04<30:42,  9.80s/it] 40%|████      | 125/312 [12:05<22:35,  7.25s/it] 40%|████      | 126/312 [12:06<16:43,  5.40s/it] 41%|████      | 127/312 [12:07<12:34,  4.08s/it] 41%|████      | 128/312 [12:08<09:42,  3.17s/it] 41%|████▏     | 129/312 [12:09<07:42,  2.53s/it] 42%|████▏     | 130/312 [12:10<06:15,  2.06s/it]                                                 {'loss': 1.5187, 'learning_rate': 0.0002, 'epoch': 0.42}
+ 42%|████▏     | 130/312 [12:10<06:15,  2.06s/it] 42%|████▏     | 131/312 [12:12<05:26,  1.80s/it] 42%|████▏     | 132/312 [12:13<04:49,  1.61s/it] 43%|████▎     | 133/312 [12:14<04:21,  1.46s/it] 43%|████▎     | 134/312 [12:15<04:00,  1.35s/it] 43%|████▎     | 135/312 [12:16<03:43,  1.26s/it] 44%|████▎     | 136/312 [12:17<03:31,  1.20s/it] 44%|████▍     | 137/312 [12:18<03:28,  1.19s/it] 44%|████▍     | 138/312 [12:19<03:22,  1.16s/it] 45%|████▍     | 139/312 [12:20<03:11,  1.11s/it] 45%|████▍     | 140/312 [12:21<03:10,  1.11s/it]                                                 {'loss': 1.3957, 'learning_rate': 0.0002, 'epoch': 0.45}
+ 45%|████▍     | 140/312 [12:22<03:10,  1.11s/it] 45%|████▌     | 141/312 [13:47<1:15:37, 26.53s/it] 46%|████▌     | 142/312 [13:48<53:35, 18.92s/it]   46%|████▌     | 143/312 [13:50<38:12, 13.56s/it] 46%|████▌     | 144/312 [13:51<27:31,  9.83s/it] 46%|████▋     | 145/312 [13:52<20:01,  7.19s/it] 47%|████▋     | 146/312 [13:53<14:53,  5.38s/it] 47%|████▋     | 147/312 [13:54<11:16,  4.10s/it] 47%|████▋     | 148/312 [13:55<08:42,  3.19s/it] 48%|████▊     | 149/312 [13:56<07:01,  2.59s/it] 48%|████▊     | 150/312 [13:57<05:51,  2.17s/it]                                                 {'loss': 1.4396, 'learning_rate': 0.0002, 'epoch': 0.48}
+ 48%|████▊     | 150/312 [13:57<05:51,  2.17s/it] 48%|████▊     | 151/312 [13:59<05:06,  1.90s/it] 49%|████▊     | 152/312 [14:00<04:29,  1.69s/it] 49%|████▉     | 153/312 [14:01<03:58,  1.50s/it] 49%|████▉     | 154/312 [14:02<03:43,  1.41s/it] 50%|████▉     | 155/312 [14:03<03:26,  1.31s/it] 50%|█████     | 156/312 [14:04<03:13,  1.24s/it] 50%|█████     | 157/312 [14:05<03:08,  1.21s/it] 51%|█████     | 158/312 [14:06<02:58,  1.16s/it] 51%|█████     | 159/312 [14:07<02:50,  1.12s/it] 51%|█████▏    | 160/312 [14:09<02:47,  1.10s/it]                                                 {'loss': 1.5228, 'learning_rate': 0.0002, 'epoch': 0.51}
+ 51%|█████▏    | 160/312 [14:09<02:47,  1.10s/it] 52%|█████▏    | 161/312 [15:33<1:05:59, 26.22s/it] 52%|█████▏    | 162/312 [15:34<46:40, 18.67s/it]   52%|█████▏    | 163/312 [15:36<33:16, 13.40s/it] 53%|█████▎    | 164/312 [15:37<23:56,  9.71s/it] 53%|█████▎    | 165/312 [15:38<17:33,  7.16s/it] 53%|█████▎    | 166/312 [15:39<13:08,  5.40s/it] 54%|█████▎    | 167/312 [15:40<09:54,  4.10s/it] 54%|█████▍    | 168/312 [15:41<07:42,  3.22s/it] 54%|█████▍    | 169/312 [15:43<06:14,  2.62s/it] 54%|█████▍    | 170/312 [15:44<05:03,  2.13s/it]                                                 {'loss': 1.4937, 'learning_rate': 0.0002, 'epoch': 0.54}
+ 54%|█████▍    | 170/312 [15:44<05:03,  2.13s/it] 55%|█████▍    | 171/312 [15:45<04:17,  1.83s/it] 55%|█████▌    | 172/312 [15:46<03:43,  1.60s/it] 55%|█████▌    | 173/312 [15:47<03:22,  1.46s/it] 56%|█████▌    | 174/312 [15:48<03:04,  1.34s/it] 56%|█████▌    | 175/312 [15:49<02:54,  1.27s/it] 56%|█████▋    | 176/312 [15:50<02:44,  1.21s/it] 57%|█████▋    | 177/312 [15:51<02:41,  1.19s/it] 57%|█████▋    | 178/312 [15:52<02:33,  1.15s/it] 57%|█████▋    | 179/312 [15:54<02:34,  1.16s/it] 58%|█████▊    | 180/312 [15:55<02:27,  1.12s/it]                                                 {'loss': 1.3736, 'learning_rate': 0.0002, 'epoch': 0.58}
+ 58%|█████▊    | 180/312 [15:55<02:27,  1.12s/it] 58%|█████▊    | 181/312 [17:20<57:25, 26.30s/it] 58%|█████▊    | 182/312 [17:21<40:35, 18.73s/it] 59%|█████▊    | 183/312 [17:22<28:55, 13.45s/it] 59%|█████▉    | 184/312 [17:23<20:49,  9.76s/it] 59%|█████▉    | 185/312 [17:24<15:14,  7.20s/it] 60%|█████▉    | 186/312 [17:25<11:14,  5.35s/it] 60%|█████▉    | 187/312 [17:26<08:27,  4.06s/it] 60%|██████    | 188/312 [17:27<06:32,  3.16s/it] 61%|██████    | 189/312 [17:28<05:13,  2.55s/it] 61%|██████    | 190/312 [17:29<04:14,  2.09s/it]                                                 {'loss': 1.5532, 'learning_rate': 0.0002, 'epoch': 0.61}
+ 61%|██████    | 190/312 [17:29<04:14,  2.09s/it] 61%|██████    | 191/312 [17:31<03:39,  1.81s/it] 62%|██████▏   | 192/312 [17:32<03:10,  1.59s/it] 62%|██████▏   | 193/312 [17:33<02:52,  1.45s/it] 62%|██████▏   | 194/312 [17:34<02:41,  1.37s/it] 62%|██████▎   | 195/312 [17:35<02:28,  1.27s/it] 63%|██████▎   | 196/312 [17:36<02:25,  1.25s/it] 63%|██████▎   | 197/312 [17:37<02:15,  1.17s/it] 63%|██████▎   | 198/312 [17:38<02:09,  1.14s/it] 64%|██████▍   | 199/312 [17:39<02:04,  1.10s/it] 64%|██████▍   | 200/312 [17:41<02:07,  1.14s/it]                                                 {'loss': 1.4692, 'learning_rate': 0.0002, 'epoch': 0.64}
+ 64%|██████▍   | 200/312 [17:41<02:07,  1.14s/it] 64%|██████▍   | 201/312 [19:05<48:27, 26.20s/it] 65%|██████▍   | 202/312 [19:06<34:11, 18.65s/it] 65%|██████▌   | 203/312 [19:07<24:20, 13.40s/it] 65%|██████▌   | 204/312 [19:09<17:35,  9.78s/it] 66%|██████▌   | 205/312 [19:10<12:49,  7.19s/it] 66%|██████▌   | 206/312 [19:11<09:27,  5.36s/it] 66%|██████▋   | 207/312 [19:12<07:07,  4.07s/it] 67%|██████▋   | 208/312 [19:13<05:30,  3.18s/it] 67%|██████▋   | 209/312 [19:14<04:24,  2.56s/it] 67%|██████▋   | 210/312 [19:15<03:40,  2.16s/it]                                                 {'loss': 1.3904, 'learning_rate': 0.0002, 'epoch': 0.67}
+ 67%|██████▋   | 210/312 [19:15<03:40,  2.16s/it] 68%|██████▊   | 211/312 [19:17<03:10,  1.88s/it] 68%|██████▊   | 212/312 [19:18<02:49,  1.70s/it] 68%|██████▊   | 213/312 [19:19<02:37,  1.60s/it] 69%|██████▊   | 214/312 [19:20<02:23,  1.46s/it] 69%|██████▉   | 215/312 [19:22<02:11,  1.36s/it] 69%|██████▉   | 216/312 [19:23<02:07,  1.33s/it] 70%|██████▉   | 217/312 [19:24<02:01,  1.28s/it] 70%|██████▉   | 218/312 [19:25<01:57,  1.25s/it] 70%|███████   | 219/312 [19:26<01:51,  1.20s/it] 71%|███████   | 220/312 [19:27<01:49,  1.19s/it]                                                 {'loss': 1.3964, 'learning_rate': 0.0002, 'epoch': 0.7}
+ 71%|███████   | 220/312 [19:27<01:49,  1.19s/it] 71%|███████   | 221/312 [20:52<39:57, 26.34s/it] 71%|███████   | 222/312 [20:54<28:08, 18.77s/it] 71%|███████▏  | 223/312 [20:55<19:56, 13.44s/it] 72%|███████▏  | 224/312 [20:56<14:18,  9.75s/it] 72%|███████▏  | 225/312 [20:57<10:24,  7.18s/it] 72%|███████▏  | 226/312 [20:58<07:42,  5.38s/it] 73%|███████▎  | 227/312 [20:59<05:50,  4.12s/it] 73%|███████▎  | 228/312 [21:01<04:33,  3.26s/it] 73%|███████▎  | 229/312 [21:02<03:38,  2.63s/it] 74%|███████▎  | 230/312 [21:03<02:55,  2.14s/it]                                                 {'loss': 1.4251, 'learning_rate': 0.0002, 'epoch': 0.74}
+ 74%|███████▎  | 230/312 [21:03<02:55,  2.14s/it] 74%|███████▍  | 231/312 [21:04<02:27,  1.82s/it] 74%|███████▍  | 232/312 [21:05<02:08,  1.60s/it] 75%|███████▍  | 233/312 [21:06<01:53,  1.44s/it] 75%|███████▌  | 234/312 [21:07<01:42,  1.31s/it] 75%|███████▌  | 235/312 [21:08<01:39,  1.29s/it] 76%|███████▌  | 236/312 [21:09<01:33,  1.23s/it] 76%|███████▌  | 237/312 [21:10<01:28,  1.19s/it] 76%|███████▋  | 238/312 [21:11<01:22,  1.12s/it] 77%|███████▋  | 239/312 [21:12<01:22,  1.13s/it] 77%|███████▋  | 240/312 [21:13<01:19,  1.10s/it]                                                 {'loss': 1.4862, 'learning_rate': 0.0002, 'epoch': 0.77}
+ 77%|███████▋  | 240/312 [21:14<01:19,  1.10s/it] 77%|███████▋  | 241/312 [22:38<30:56, 26.14s/it] 78%|███████▊  | 242/312 [22:39<21:42, 18.61s/it] 78%|███████▊  | 243/312 [22:40<15:21, 13.35s/it] 78%|███████▊  | 244/312 [22:41<10:58,  9.69s/it] 79%|███████▊  | 245/312 [22:43<07:58,  7.14s/it] 79%|███████▉  | 246/312 [22:44<05:50,  5.31s/it] 79%|███████▉  | 247/312 [22:45<04:25,  4.08s/it] 79%|███████▉  | 248/312 [22:46<03:23,  3.18s/it] 80%|███████▉  | 249/312 [22:47<02:43,  2.60s/it] 80%|████████  | 250/312 [22:48<02:11,  2.12s/it]                                                 {'loss': 1.3505, 'learning_rate': 0.0002, 'epoch': 0.8}
+ 80%|████████  | 250/312 [22:48<02:11,  2.12s/it] 80%|████████  | 251/312 [22:49<01:49,  1.80s/it] 81%|████████  | 252/312 [22:50<01:37,  1.63s/it] 81%|████████  | 253/312 [22:52<01:30,  1.54s/it] 81%|████████▏ | 254/312 [22:53<01:21,  1.41s/it] 82%|████████▏ | 255/312 [22:54<01:16,  1.34s/it] 82%|████████▏ | 256/312 [22:55<01:10,  1.26s/it] 82%|████████▏ | 257/312 [22:56<01:09,  1.25s/it] 83%|████████▎ | 258/312 [22:57<01:03,  1.18s/it] 83%|████████▎ | 259/312 [22:58<01:02,  1.17s/it] 83%|████████▎ | 260/312 [23:00<00:59,  1.15s/it]                                                 {'loss': 1.6337, 'learning_rate': 0.0002, 'epoch': 0.83}
+ 83%|████████▎ | 260/312 [23:00<00:59,  1.15s/it] 84%|████████▎ | 261/312 [24:24<22:13, 26.16s/it] 84%|████████▍ | 262/312 [24:25<15:30, 18.62s/it] 84%|████████▍ | 263/312 [24:26<10:55, 13.37s/it] 85%|████████▍ | 264/312 [24:27<07:44,  9.68s/it] 85%|████████▍ | 265/312 [24:28<05:35,  7.13s/it] 85%|████████▌ | 266/312 [24:30<04:04,  5.31s/it] 86%|████████▌ | 267/312 [24:31<03:01,  4.03s/it] 86%|████████▌ | 268/312 [24:32<02:18,  3.16s/it] 86%|████████▌ | 269/312 [24:33<01:50,  2.56s/it] 87%|████████▋ | 270/312 [24:34<01:30,  2.15s/it]                                                 {'loss': 1.4196, 'learning_rate': 0.0002, 'epoch': 0.86}
+ 87%|████████▋ | 270/312 [24:34<01:30,  2.15s/it] 87%|████████▋ | 271/312 [24:36<01:20,  1.96s/it] 87%|████████▋ | 272/312 [24:37<01:10,  1.77s/it] 88%|████████▊ | 273/312 [24:38<00:59,  1.53s/it] 88%|████████▊ | 274/312 [24:39<00:52,  1.38s/it] 88%|████████▊ | 275/312 [24:40<00:48,  1.32s/it] 88%|████████▊ | 276/312 [24:41<00:44,  1.24s/it] 89%|████████▉ | 277/312 [24:42<00:41,  1.18s/it] 89%|████████▉ | 278/312 [24:44<00:42,  1.25s/it] 89%|████████▉ | 279/312 [24:45<00:41,  1.25s/it] 90%|████████▉ | 280/312 [24:46<00:37,  1.16s/it]                                                 {'loss': 1.3903, 'learning_rate': 0.0002, 'epoch': 0.9}
+ 90%|████████▉ | 280/312 [24:46<00:37,  1.16s/it] 90%|█████████ | 281/312 [26:11<13:34, 26.28s/it] 90%|█████████ | 282/312 [26:12<09:21, 18.70s/it] 91%|█████████ | 283/312 [26:13<06:29, 13.42s/it] 91%|█████████ | 284/312 [26:14<04:33,  9.75s/it] 91%|█████████▏| 285/312 [26:15<03:13,  7.18s/it] 92%|█████████▏| 286/312 [26:16<02:19,  5.35s/it] 92%|█████████▏| 287/312 [26:17<01:41,  4.07s/it] 92%|█████████▏| 288/312 [26:18<01:16,  3.17s/it] 93%|█████████▎| 289/312 [26:19<00:58,  2.55s/it] 93%|█████████▎| 290/312 [26:21<00:46,  2.11s/it]                                                 {'loss': 1.3555, 'learning_rate': 0.0002, 'epoch': 0.93}
+ 93%|█████████▎| 290/312 [26:21<00:46,  2.11s/it] 93%|█████████▎| 291/312 [26:22<00:38,  1.84s/it] 94%|█████████▎| 292/312 [26:23<00:33,  1.67s/it] 94%|█████████▍| 293/312 [26:24<00:28,  1.47s/it] 94%|█████████▍| 294/312 [26:25<00:24,  1.38s/it] 95%|█████████▍| 295/312 [26:26<00:21,  1.29s/it] 95%|█████████▍| 296/312 [26:27<00:19,  1.22s/it] 95%|█████████▌| 297/312 [26:28<00:17,  1.17s/it] 96%|█████████▌| 298/312 [26:29<00:16,  1.15s/it] 96%|█████████▌| 299/312 [26:31<00:14,  1.12s/it] 96%|█████████▌| 300/312 [26:32<00:13,  1.10s/it]                                                 {'loss': 1.4708, 'learning_rate': 0.0002, 'epoch': 0.96}
+ 96%|█████████▌| 300/312 [26:32<00:13,  1.10s/it] 96%|█████████▋| 301/312 [27:56<04:48, 26.22s/it] 97%|█████████▋| 302/312 [27:58<03:06, 18.68s/it] 97%|█████████▋| 303/312 [27:59<02:00, 13.42s/it] 97%|█████████▋| 304/312 [28:00<01:17,  9.72s/it] 98%|█████████▊| 305/312 [28:01<00:49,  7.13s/it] 98%|█████████▊| 306/312 [28:02<00:32,  5.34s/it] 98%|█████████▊| 307/312 [28:03<00:20,  4.07s/it] 99%|█████████▊| 308/312 [28:04<00:12,  3.20s/it] 99%|█████████▉| 309/312 [28:05<00:07,  2.57s/it] 99%|█████████▉| 310/312 [28:07<00:04,  2.15s/it]                                                 {'loss': 1.6508, 'learning_rate': 0.0002, 'epoch': 0.99}
+ 99%|█████████▉| 310/312 [28:07<00:04,  2.15s/it]100%|█████████▉| 311/312 [28:08<00:01,  1.83s/it]100%|██████████| 312/312 [28:09<00:00,  1.63s/it]                                                 {'train_runtime': 1692.1306, 'train_samples_per_second': 2.955, 'train_steps_per_second': 0.184, 'train_loss': 1.5501657449282134, 'epoch': 1.0}
+100%|██████████| 312/312 [28:09<00:00,  1.63s/it]100%|██████████| 312/312 [28:09<00:00,  5.41s/it]
+***** train metrics *****
+  epoch                    =     0.9984
+  total_flos               = 30418835GF
+  train_loss               =     1.5502
+  train_runtime            = 0:28:12.13
+  train_samples            =       5000
+  train_samples_per_second =      2.955
+  train_steps_per_second   =      0.184
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/dengkn/AS-LoRA/src/run_uie_lora.py", line 674, in <module>
+[rank0]:     main()
+[rank0]:   File "/home/dengkn/AS-LoRA/src/run_uie_lora.py", line 625, in main
+[rank0]:     grad_mat = trainer.get_grad_matrix_from_grad()
+[rank0]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 167, in get_grad_matrix_from_grad
+[rank0]:     U,S,Vh = torch.linalg.svd(param, full_matrices=False)
+[rank0]: NotImplementedError: "svd_cuda_gesvdj" not implemented for 'BFloat16'
+[WARNING|logging.py:328] 2025-12-16 16:19:54,234 >> We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
+[rank0]:[W1216 16:19:54.108020848 ProcessGroupNCCL.cpp:1538] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[rank1]:[W1216 16:19:56.514954109 TCPStore.cpp:125] [c10d] recvValue failed on SocketImpl(fd=33, addr=[localhost]:35530, remote=[localhost]:27024): Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:682 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x80 (0x7367bc3e2eb0 in /home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x5d694d1 (0x73679f9694d1 in /home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: <unknown function> + 0x5d6a8cd (0x73679f96a8cd in /home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: <unknown function> + 0x5d6b47a (0x73679f96b47a in /home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/lib/libtorch_cpu.so)
+frame #4: c10d::TCPStore::check(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) + 0x31e (0x73679f96619e in /home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/lib/libtorch_cpu.so)
+frame #5: c10d::ProcessGroupNCCL::HeartbeatMonitor::runLoop() + 0x398 (0x73675ee3db18 in /home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/lib/libtorch_cuda.so)
+frame #6: <unknown function> + 0xef5e4 (0x7367420ef5e4 in /home/dengkn/miniforge3/envs/aslora/bin/../lib/libstdc++.so.6)
+frame #7: <unknown function> + 0x9caa4 (0x7367bd29caa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #8: <unknown function> + 0x129c6c (0x7367bd329c6c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank1]:[W1216 16:19:56.521102675 ProcessGroupNCCL.cpp:1783] [PG ID 0 PG GUID 0(default_pg) Rank 1] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+[2025-12-16 16:19:56,447] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 22054
+[2025-12-16 16:19:56,448] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 22055
+[2025-12-16 16:19:56,779] [ERROR] [launch.py:325:sigkill_handler] ['/home/dengkn/miniforge3/envs/aslora/bin/python3.9', '-u', 'src/run_uie_lora.py', '--local_rank=1', '--do_train', '--do_predict', '--predict_with_generate', '--model_name_or_path', 'logs_and_outputs_llama/order_1/outputs_order_1/1-dbpedia/adapter', '--data_dir', 'CL_Benchmark', '--task_config_dir', 'configs/order1_configs/amazon', '--instruction_file', 'configs/instruction_config.json', '--instruction_strategy', 'single', '--output_dir', 'logs_and_outputs_llama/order_1/outputs_order_1/2-amazon', '--per_device_train_batch_size', '1', '--per_device_eval_batch_size', '2', '--gradient_accumulation_steps', '8', '--learning_rate', '2e-04', '--num_train_epochs', '1', '--deepspeed', 'configs/ds_configs/stage2_llama.config', '--run_name', 'order1_round2', '--max_source_length', '512', '--max_target_length', '50', '--generation_max_length', '50', '--add_task_name', 'True', '--add_dataset_name', 'True', '--overwrite_output_dir', '--overwrite_cache', '--lr_scheduler_type', 'constant', '--warmup_steps', '0', '--logging_strategy', 'steps', '--logging_steps', '10', '--evaluation_strategy', 'no', '--save_strategy', 'no', '--save_steps', '1500', '--lamda_1', '0.5', '--lamda_2', '0', '--lora_modules', '.*self_attn.(q_proj|v_proj).*', '--optim_target_modules', '.*mlp.gate_proj.*', '--proj_lora_modules', '.*self_attn.(q_proj|v_proj).loranew_A.*', '--galore_rank', '2', '--galore_scale', '0.25', '--galore_lr', '1e-06', '--gradient_checkpointing', 'True', '--bf16', 'True', '--fp16', 'False'] exits with return code = 1
++ sleep 5
++ deepspeed --include localhost:0,1 --master_port 27024 src/run_uie_lora.py --do_train --do_predict --predict_with_generate --model_name_or_path logs_and_outputs_llama/order_1/outputs_order_1/2-amazon/adapter --data_dir CL_Benchmark --task_config_dir configs/order1_configs/yahoo --instruction_file configs/instruction_config.json --instruction_strategy single --output_dir logs_and_outputs_llama/order_1/outputs_order_1/3-yahoo --per_device_train_batch_size 1 --per_device_eval_batch_size 2 --gradient_accumulation_steps 8 --learning_rate 2e-04 --num_train_epochs 1 --deepspeed configs/ds_configs/stage2_llama.config --run_name order1_round3 --max_source_length 512 --max_target_length 50 --generation_max_length 50 --add_task_name True --add_dataset_name True --overwrite_output_dir --overwrite_cache --lr_scheduler_type constant --warmup_steps 0 --logging_strategy steps --logging_steps 10 --evaluation_strategy no --save_strategy no --save_steps 1500 --lamda_1 0.5 --lamda_2 0 --lora_modules '.*self_attn.(q_proj|v_proj).*' --optim_target_modules '.*mlp.gate_proj.*' --proj_lora_modules '.*self_attn.(q_proj|v_proj).loranew_A.*' --galore_rank 2 --galore_scale 0.25 --galore_lr 1e-06 --gradient_checkpointing True --bf16 True --fp16 False
+[2025-12-16 16:20:04,284] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/utils/hub.py:127: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[2025-12-16 16:20:06,105] [WARNING] [runner.py:212:fetch_hostfile] Unable to find hostfile, will proceed with training with local resources only.
+[2025-12-16 16:20:06,105] [INFO] [runner.py:585:main] cmd = /home/dengkn/miniforge3/envs/aslora/bin/python3.9 -u -m deepspeed.launcher.launch --world_info=eyJsb2NhbGhvc3QiOiBbMCwgMV19 --master_addr=127.0.0.1 --master_port=27024 --enable_each_rank_log=None src/run_uie_lora.py --do_train --do_predict --predict_with_generate --model_name_or_path logs_and_outputs_llama/order_1/outputs_order_1/2-amazon/adapter --data_dir CL_Benchmark --task_config_dir configs/order1_configs/yahoo --instruction_file configs/instruction_config.json --instruction_strategy single --output_dir logs_and_outputs_llama/order_1/outputs_order_1/3-yahoo --per_device_train_batch_size 1 --per_device_eval_batch_size 2 --gradient_accumulation_steps 8 --learning_rate 2e-04 --num_train_epochs 1 --deepspeed configs/ds_configs/stage2_llama.config --run_name order1_round3 --max_source_length 512 --max_target_length 50 --generation_max_length 50 --add_task_name True --add_dataset_name True --overwrite_output_dir --overwrite_cache --lr_scheduler_type constant --warmup_steps 0 --logging_strategy steps --logging_steps 10 --evaluation_strategy no --save_strategy no --save_steps 1500 --lamda_1 0.5 --lamda_2 0 --lora_modules .*self_attn.(q_proj|v_proj).* --optim_target_modules .*mlp.gate_proj.* --proj_lora_modules .*self_attn.(q_proj|v_proj).loranew_A.* --galore_rank 2 --galore_scale 0.25 --galore_lr 1e-06 --gradient_checkpointing True --bf16 True --fp16 False
+[2025-12-16 16:20:07,239] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/utils/hub.py:127: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[2025-12-16 16:20:09,012] [INFO] [launch.py:146:main] WORLD INFO DICT: {'localhost': [0, 1]}
+[2025-12-16 16:20:09,012] [INFO] [launch.py:152:main] nnodes=1, num_local_procs=2, node_rank=0
+[2025-12-16 16:20:09,012] [INFO] [launch.py:163:main] global_rank_mapping=defaultdict(<class 'list'>, {'localhost': [0, 1]})
+[2025-12-16 16:20:09,012] [INFO] [launch.py:164:main] dist_world_size=2
+[2025-12-16 16:20:09,012] [INFO] [launch.py:168:main] Setting CUDA_VISIBLE_DEVICES=0,1
+[2025-12-16 16:20:09,039] [INFO] [launch.py:256:main] process 27254 spawned with command: ['/home/dengkn/miniforge3/envs/aslora/bin/python3.9', '-u', 'src/run_uie_lora.py', '--local_rank=0', '--do_train', '--do_predict', '--predict_with_generate', '--model_name_or_path', 'logs_and_outputs_llama/order_1/outputs_order_1/2-amazon/adapter', '--data_dir', 'CL_Benchmark', '--task_config_dir', 'configs/order1_configs/yahoo', '--instruction_file', 'configs/instruction_config.json', '--instruction_strategy', 'single', '--output_dir', 'logs_and_outputs_llama/order_1/outputs_order_1/3-yahoo', '--per_device_train_batch_size', '1', '--per_device_eval_batch_size', '2', '--gradient_accumulation_steps', '8', '--learning_rate', '2e-04', '--num_train_epochs', '1', '--deepspeed', 'configs/ds_configs/stage2_llama.config', '--run_name', 'order1_round3', '--max_source_length', '512', '--max_target_length', '50', '--generation_max_length', '50', '--add_task_name', 'True', '--add_dataset_name', 'True', '--overwrite_output_dir', '--overwrite_cache', '--lr_scheduler_type', 'constant', '--warmup_steps', '0', '--logging_strategy', 'steps', '--logging_steps', '10', '--evaluation_strategy', 'no', '--save_strategy', 'no', '--save_steps', '1500', '--lamda_1', '0.5', '--lamda_2', '0', '--lora_modules', '.*self_attn.(q_proj|v_proj).*', '--optim_target_modules', '.*mlp.gate_proj.*', '--proj_lora_modules', '.*self_attn.(q_proj|v_proj).loranew_A.*', '--galore_rank', '2', '--galore_scale', '0.25', '--galore_lr', '1e-06', '--gradient_checkpointing', 'True', '--bf16', 'True', '--fp16', 'False']
+[2025-12-16 16:20:09,063] [INFO] [launch.py:256:main] process 27255 spawned with command: ['/home/dengkn/miniforge3/envs/aslora/bin/python3.9', '-u', 'src/run_uie_lora.py', '--local_rank=1', '--do_train', '--do_predict', '--predict_with_generate', '--model_name_or_path', 'logs_and_outputs_llama/order_1/outputs_order_1/2-amazon/adapter', '--data_dir', 'CL_Benchmark', '--task_config_dir', 'configs/order1_configs/yahoo', '--instruction_file', 'configs/instruction_config.json', '--instruction_strategy', 'single', '--output_dir', 'logs_and_outputs_llama/order_1/outputs_order_1/3-yahoo', '--per_device_train_batch_size', '1', '--per_device_eval_batch_size', '2', '--gradient_accumulation_steps', '8', '--learning_rate', '2e-04', '--num_train_epochs', '1', '--deepspeed', 'configs/ds_configs/stage2_llama.config', '--run_name', 'order1_round3', '--max_source_length', '512', '--max_target_length', '50', '--generation_max_length', '50', '--add_task_name', 'True', '--add_dataset_name', 'True', '--overwrite_output_dir', '--overwrite_cache', '--lr_scheduler_type', 'constant', '--warmup_steps', '0', '--logging_strategy', 'steps', '--logging_steps', '10', '--evaluation_strategy', 'no', '--save_strategy', 'no', '--save_steps', '1500', '--lamda_1', '0.5', '--lamda_2', '0', '--lora_modules', '.*self_attn.(q_proj|v_proj).*', '--optim_target_modules', '.*mlp.gate_proj.*', '--proj_lora_modules', '.*self_attn.(q_proj|v_proj).loranew_A.*', '--galore_rank', '2', '--galore_scale', '0.25', '--galore_lr', '1e-06', '--gradient_checkpointing', 'True', '--bf16', 'True', '--fp16', 'False']
+[2025-12-16 16:20:11,690] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-12-16 16:20:11,705] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-12-16 16:20:13,067] [INFO] [comm.py:652:init_distributed] cdb=None
+[2025-12-16 16:20:13,067] [INFO] [comm.py:683:init_distributed] Initializing TorchBackend in DeepSpeed with backend nccl
+[2025-12-16 16:20:13,070] [INFO] [comm.py:652:init_distributed] cdb=None
+12/16/2025 16:20:13 - WARNING - __main__ - According to arugements, Process rank: 1, device: cuda:1, n_gpu: 1distributed training: True, 16-bits training: False
+last_checkpoint: None
+
+######################
+lora=gpfirst,
+galore=gpfirst,
+lorarank=8,
+lr=0.0002,
+galorerank=2
+galore lr=1e-06
+######################
+
+12/16/2025 16:20:13 - WARNING - __main__ - According to arugements, Process rank: 0, device: cuda:0, n_gpu: 1distributed training: True, 16-bits training: False
+last_checkpoint: None
+normalizer.cc(51) LOG(INFO) precompiled_charsmap is empty. use identity normalization.
+normalizer.cc(51) LOG(INFO) precompiled_charsmap is empty. use identity normalization.
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:01,  1.48it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:01,  1.21it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:01<00:00,  1.59it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:01<00:00,  1.36it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.74it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.68it/s]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.64it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.53it/s]
+trainable params: 1447034880 || all params: 6750998528 || trainable%: 21.434382987914642
+-----Gradient checkpointing: True -----
+trainable params: 1447034880 || all params: 6750998528 || trainable%: 21.434382987914642
+12/16/2025 16:20:23 - WARNING - __main__ - 
+============================================================
+12/16/2025 16:20:23 - WARNING - __main__ - 模型参数精度验证:
+12/16/2025 16:20:23 - WARNING - __main__ - ============================================================
+12/16/2025 16:20:23 - WARNING - __main__ -   bfloat16: 291 个参数
+12/16/2025 16:20:23 - WARNING - __main__ -     示例参数: ['base_model.model.model.embed_tokens.weight', 'base_model.model.model.layers.0.self_attn.q_proj.weight', 'base_model.model.model.layers.0.self_attn.k_proj.weight']
+12/16/2025 16:20:23 - WARNING - __main__ -   float32: 256 个参数
+12/16/2025 16:20:23 - WARNING - __main__ -     示例参数: ['base_model.model.model.layers.0.self_attn.q_proj.lora_A.default.weight', 'base_model.model.model.layers.0.self_attn.q_proj.lora_B.default.weight', 'base_model.model.model.layers.0.self_attn.q_proj.loranew_A.default.weight']
+12/16/2025 16:20:23 - WARNING - __main__ - ============================================================
+
+12/16/2025 16:20:23 - WARNING - __main__ - ✓ 第一个参数精度: torch.bfloat16
+12/16/2025 16:20:23 - WARNING - __main__ - ✓ 第一个参数设备: cpu
+
+-----Gradient checkpointing: True -----
+move model to device: cuda:1
+move model to device: cuda:0
+resume_from_checkpoint: None
+TRAINER_STATE_NAME: trainer_state.json
+[WARNING|logging.py:328] 2025-12-16 16:20:29,652 >> `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+resume_from_checkpoint: None
+TRAINER_STATE_NAME: trainer_state.json
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/home/dengkn/AS-LoRA/src/peft/peft_model.py", line 288, in __getattr__
+[rank1]:     return super().__getattr__(name)  # defer to nn.Module's logic
+[rank1]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1962, in __getattr__
+[rank1]:     raise AttributeError(
+[rank1]: AttributeError: 'PeftModelForCausalLM' object has no attribute 'backward'
+
+[rank1]: During handling of the above exception, another exception occurred:
+
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/home/dengkn/AS-LoRA/src/peft/tuners/lora.py", line 280, in __getattr__
+[rank1]:     return super().__getattr__(name)  # defer to nn.Module's logic
+[rank1]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1962, in __getattr__
+[rank1]:     raise AttributeError(
+[rank1]: AttributeError: 'LoraModel' object has no attribute 'backward'
+
+[rank1]: During handling of the above exception, another exception occurred:
+
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/home/dengkn/AS-LoRA/src/run_uie_lora.py", line 674, in <module>
+[rank1]:     main()
+[rank1]:   File "/home/dengkn/AS-LoRA/src/run_uie_lora.py", line 607, in main
+[rank1]:     train_result = trainer.train(resume_from_checkpoint=checkpoint, modelpath=peft_model_id)   #model path --- IGNORE ---
+[rank1]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 401, in train
+[rank1]:     return inner_training_loop(
+[rank1]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 765, in _inner_training_loop
+[rank1]:     tr_loss_step = self.training_step(model, inputs, init_weights)
+[rank1]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 997, in training_step
+[rank1]:     self.deepspeed.backward(loss)
+[rank1]:   File "/home/dengkn/AS-LoRA/src/peft/peft_model.py", line 290, in __getattr__
+[rank1]:     return getattr(self.base_model, name)
+[rank1]:   File "/home/dengkn/AS-LoRA/src/peft/tuners/lora.py", line 282, in __getattr__
+[rank1]:     return getattr(self.model, name)
+[rank1]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1962, in __getattr__
+[rank1]:     raise AttributeError(
+[rank1]: AttributeError: 'LlamaForCausalLM_with_lossmask' object has no attribute 'backward'
+  0%|          | 0/625 [00:00<?, ?it/s][WARNING|logging.py:328] 2025-12-16 16:20:30,159 >> `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/dengkn/AS-LoRA/src/peft/peft_model.py", line 288, in __getattr__
+[rank0]:     return super().__getattr__(name)  # defer to nn.Module's logic
+[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1962, in __getattr__
+[rank0]:     raise AttributeError(
+[rank0]: AttributeError: 'PeftModelForCausalLM' object has no attribute 'backward'
+
+[rank0]: During handling of the above exception, another exception occurred:
+
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/dengkn/AS-LoRA/src/peft/tuners/lora.py", line 280, in __getattr__
+[rank0]:     return super().__getattr__(name)  # defer to nn.Module's logic
+[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1962, in __getattr__
+[rank0]:     raise AttributeError(
+[rank0]: AttributeError: 'LoraModel' object has no attribute 'backward'
+
+[rank0]: During handling of the above exception, another exception occurred:
+
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/dengkn/AS-LoRA/src/run_uie_lora.py", line 674, in <module>
+[rank0]:     main()
+[rank0]:   File "/home/dengkn/AS-LoRA/src/run_uie_lora.py", line 607, in main
+[rank0]:     train_result = trainer.train(resume_from_checkpoint=checkpoint, modelpath=peft_model_id)   #model path --- IGNORE ---
+[rank0]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 401, in train
+[rank0]:     return inner_training_loop(
+[rank0]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 765, in _inner_training_loop
+[rank0]:     tr_loss_step = self.training_step(model, inputs, init_weights)
+[rank0]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 997, in training_step
+[rank0]:     self.deepspeed.backward(loss)
+[rank0]:   File "/home/dengkn/AS-LoRA/src/peft/peft_model.py", line 290, in __getattr__
+[rank0]:     return getattr(self.base_model, name)
+[rank0]:   File "/home/dengkn/AS-LoRA/src/peft/tuners/lora.py", line 282, in __getattr__
+[rank0]:     return getattr(self.model, name)
+[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1962, in __getattr__
+[rank0]:     raise AttributeError(
+[rank0]: AttributeError: 'LlamaForCausalLM_with_lossmask' object has no attribute 'backward'
+  0%|          | 0/625 [00:02<?, ?it/s]
+[rank0]:[W1216 16:20:32.974054963 ProcessGroupNCCL.cpp:1538] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[2025-12-16 16:20:33,087] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 27254
+[2025-12-16 16:20:33,258] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 27255
+[2025-12-16 16:20:33,258] [ERROR] [launch.py:325:sigkill_handler] ['/home/dengkn/miniforge3/envs/aslora/bin/python3.9', '-u', 'src/run_uie_lora.py', '--local_rank=1', '--do_train', '--do_predict', '--predict_with_generate', '--model_name_or_path', 'logs_and_outputs_llama/order_1/outputs_order_1/2-amazon/adapter', '--data_dir', 'CL_Benchmark', '--task_config_dir', 'configs/order1_configs/yahoo', '--instruction_file', 'configs/instruction_config.json', '--instruction_strategy', 'single', '--output_dir', 'logs_and_outputs_llama/order_1/outputs_order_1/3-yahoo', '--per_device_train_batch_size', '1', '--per_device_eval_batch_size', '2', '--gradient_accumulation_steps', '8', '--learning_rate', '2e-04', '--num_train_epochs', '1', '--deepspeed', 'configs/ds_configs/stage2_llama.config', '--run_name', 'order1_round3', '--max_source_length', '512', '--max_target_length', '50', '--generation_max_length', '50', '--add_task_name', 'True', '--add_dataset_name', 'True', '--overwrite_output_dir', '--overwrite_cache', '--lr_scheduler_type', 'constant', '--warmup_steps', '0', '--logging_strategy', 'steps', '--logging_steps', '10', '--evaluation_strategy', 'no', '--save_strategy', 'no', '--save_steps', '1500', '--lamda_1', '0.5', '--lamda_2', '0', '--lora_modules', '.*self_attn.(q_proj|v_proj).*', '--optim_target_modules', '.*mlp.gate_proj.*', '--proj_lora_modules', '.*self_attn.(q_proj|v_proj).loranew_A.*', '--galore_rank', '2', '--galore_scale', '0.25', '--galore_lr', '1e-06', '--gradient_checkpointing', 'True', '--bf16', 'True', '--fp16', 'False'] exits with return code = 1
++ sleep 5
++ deepspeed --include localhost:0,1 --master_port 27024 src/run_uie_lora.py --do_train --do_predict --predict_with_generate --model_name_or_path logs_and_outputs_llama/order_1/outputs_order_1/3-yahoo/adapter --data_dir CL_Benchmark --task_config_dir configs/order1_configs/agnews --instruction_file configs/instruction_config.json --instruction_strategy single --output_dir logs_and_outputs_llama/order_1/outputs_order_1/4-agnews --per_device_train_batch_size 1 --per_device_eval_batch_size 2 --gradient_accumulation_steps 8 --learning_rate 2e-04 --num_train_epochs 1 --deepspeed configs/ds_configs/stage2_llama.config --run_name order1_round4 --max_source_length 512 --max_target_length 50 --generation_max_length 50 --add_task_name True --add_dataset_name True --overwrite_output_dir --overwrite_cache --lr_scheduler_type constant --warmup_steps 0 --logging_strategy steps --logging_steps 10 --evaluation_strategy no --save_strategy no --save_steps 1500 --lamda_1 0.5 --lamda_2 0 --lora_modules '.*self_attn.(q_proj|v_proj).*' --optim_target_modules '.*mlp.gate_proj.*' --proj_lora_modules '.*self_attn.(q_proj|v_proj).loranew_A.*' --galore_rank 2 --galore_scale 0.25 --galore_lr 1e-06 --gradient_checkpointing True --bf16 True --fp16 False
+[2025-12-16 16:20:40,755] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/utils/hub.py:127: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[2025-12-16 16:20:42,552] [WARNING] [runner.py:212:fetch_hostfile] Unable to find hostfile, will proceed with training with local resources only.
+[2025-12-16 16:20:42,552] [INFO] [runner.py:585:main] cmd = /home/dengkn/miniforge3/envs/aslora/bin/python3.9 -u -m deepspeed.launcher.launch --world_info=eyJsb2NhbGhvc3QiOiBbMCwgMV19 --master_addr=127.0.0.1 --master_port=27024 --enable_each_rank_log=None src/run_uie_lora.py --do_train --do_predict --predict_with_generate --model_name_or_path logs_and_outputs_llama/order_1/outputs_order_1/3-yahoo/adapter --data_dir CL_Benchmark --task_config_dir configs/order1_configs/agnews --instruction_file configs/instruction_config.json --instruction_strategy single --output_dir logs_and_outputs_llama/order_1/outputs_order_1/4-agnews --per_device_train_batch_size 1 --per_device_eval_batch_size 2 --gradient_accumulation_steps 8 --learning_rate 2e-04 --num_train_epochs 1 --deepspeed configs/ds_configs/stage2_llama.config --run_name order1_round4 --max_source_length 512 --max_target_length 50 --generation_max_length 50 --add_task_name True --add_dataset_name True --overwrite_output_dir --overwrite_cache --lr_scheduler_type constant --warmup_steps 0 --logging_strategy steps --logging_steps 10 --evaluation_strategy no --save_strategy no --save_steps 1500 --lamda_1 0.5 --lamda_2 0 --lora_modules .*self_attn.(q_proj|v_proj).* --optim_target_modules .*mlp.gate_proj.* --proj_lora_modules .*self_attn.(q_proj|v_proj).loranew_A.* --galore_rank 2 --galore_scale 0.25 --galore_lr 1e-06 --gradient_checkpointing True --bf16 True --fp16 False
+[2025-12-16 16:20:43,680] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/utils/hub.py:127: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[2025-12-16 16:20:45,429] [INFO] [launch.py:146:main] WORLD INFO DICT: {'localhost': [0, 1]}
+[2025-12-16 16:20:45,430] [INFO] [launch.py:152:main] nnodes=1, num_local_procs=2, node_rank=0
+[2025-12-16 16:20:45,430] [INFO] [launch.py:163:main] global_rank_mapping=defaultdict(<class 'list'>, {'localhost': [0, 1]})
+[2025-12-16 16:20:45,430] [INFO] [launch.py:164:main] dist_world_size=2
+[2025-12-16 16:20:45,430] [INFO] [launch.py:168:main] Setting CUDA_VISIBLE_DEVICES=0,1
+[2025-12-16 16:20:45,456] [INFO] [launch.py:256:main] process 27893 spawned with command: ['/home/dengkn/miniforge3/envs/aslora/bin/python3.9', '-u', 'src/run_uie_lora.py', '--local_rank=0', '--do_train', '--do_predict', '--predict_with_generate', '--model_name_or_path', 'logs_and_outputs_llama/order_1/outputs_order_1/3-yahoo/adapter', '--data_dir', 'CL_Benchmark', '--task_config_dir', 'configs/order1_configs/agnews', '--instruction_file', 'configs/instruction_config.json', '--instruction_strategy', 'single', '--output_dir', 'logs_and_outputs_llama/order_1/outputs_order_1/4-agnews', '--per_device_train_batch_size', '1', '--per_device_eval_batch_size', '2', '--gradient_accumulation_steps', '8', '--learning_rate', '2e-04', '--num_train_epochs', '1', '--deepspeed', 'configs/ds_configs/stage2_llama.config', '--run_name', 'order1_round4', '--max_source_length', '512', '--max_target_length', '50', '--generation_max_length', '50', '--add_task_name', 'True', '--add_dataset_name', 'True', '--overwrite_output_dir', '--overwrite_cache', '--lr_scheduler_type', 'constant', '--warmup_steps', '0', '--logging_strategy', 'steps', '--logging_steps', '10', '--evaluation_strategy', 'no', '--save_strategy', 'no', '--save_steps', '1500', '--lamda_1', '0.5', '--lamda_2', '0', '--lora_modules', '.*self_attn.(q_proj|v_proj).*', '--optim_target_modules', '.*mlp.gate_proj.*', '--proj_lora_modules', '.*self_attn.(q_proj|v_proj).loranew_A.*', '--galore_rank', '2', '--galore_scale', '0.25', '--galore_lr', '1e-06', '--gradient_checkpointing', 'True', '--bf16', 'True', '--fp16', 'False']
+[2025-12-16 16:20:45,479] [INFO] [launch.py:256:main] process 27894 spawned with command: ['/home/dengkn/miniforge3/envs/aslora/bin/python3.9', '-u', 'src/run_uie_lora.py', '--local_rank=1', '--do_train', '--do_predict', '--predict_with_generate', '--model_name_or_path', 'logs_and_outputs_llama/order_1/outputs_order_1/3-yahoo/adapter', '--data_dir', 'CL_Benchmark', '--task_config_dir', 'configs/order1_configs/agnews', '--instruction_file', 'configs/instruction_config.json', '--instruction_strategy', 'single', '--output_dir', 'logs_and_outputs_llama/order_1/outputs_order_1/4-agnews', '--per_device_train_batch_size', '1', '--per_device_eval_batch_size', '2', '--gradient_accumulation_steps', '8', '--learning_rate', '2e-04', '--num_train_epochs', '1', '--deepspeed', 'configs/ds_configs/stage2_llama.config', '--run_name', 'order1_round4', '--max_source_length', '512', '--max_target_length', '50', '--generation_max_length', '50', '--add_task_name', 'True', '--add_dataset_name', 'True', '--overwrite_output_dir', '--overwrite_cache', '--lr_scheduler_type', 'constant', '--warmup_steps', '0', '--logging_strategy', 'steps', '--logging_steps', '10', '--evaluation_strategy', 'no', '--save_strategy', 'no', '--save_steps', '1500', '--lamda_1', '0.5', '--lamda_2', '0', '--lora_modules', '.*self_attn.(q_proj|v_proj).*', '--optim_target_modules', '.*mlp.gate_proj.*', '--proj_lora_modules', '.*self_attn.(q_proj|v_proj).loranew_A.*', '--galore_rank', '2', '--galore_scale', '0.25', '--galore_lr', '1e-06', '--gradient_checkpointing', 'True', '--bf16', 'True', '--fp16', 'False']
+[2025-12-16 16:20:48,117] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-12-16 16:20:48,127] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-12-16 16:20:49,521] [INFO] [comm.py:652:init_distributed] cdb=None
+[2025-12-16 16:20:49,527] [INFO] [comm.py:652:init_distributed] cdb=None
+[2025-12-16 16:20:49,527] [INFO] [comm.py:683:init_distributed] Initializing TorchBackend in DeepSpeed with backend nccl
+12/16/2025 16:20:50 - WARNING - __main__ - According to arugements, Process rank: 1, device: cuda:1, n_gpu: 1distributed training: True, 16-bits training: False
+last_checkpoint: None
+
+######################
+lora=gpfirst,
+galore=gpfirst,
+lorarank=8,
+lr=0.0002,
+galorerank=2
+galore lr=1e-06
+######################
+
+12/16/2025 16:20:50 - WARNING - __main__ - According to arugements, Process rank: 0, device: cuda:0, n_gpu: 1distributed training: True, 16-bits training: False
+last_checkpoint: None
+normalizer.cc(51) LOG(INFO) precompiled_charsmap is empty. use identity normalization.
+normalizer.cc(51) LOG(INFO) precompiled_charsmap is empty. use identity normalization.
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:01,  1.53it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:01,  1.24it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:01<00:00,  1.63it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:01<00:00,  1.38it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.81it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.75it/s]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.66it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.56it/s]
+trainable params: 1447034880 || all params: 6755192832 || trainable%: 21.42107436438019
+12/16/2025 16:20:59 - WARNING - __main__ - 
+============================================================
+12/16/2025 16:20:59 - WARNING - __main__ - 模型参数精度验证:
+12/16/2025 16:20:59 - WARNING - __main__ - ============================================================
+12/16/2025 16:20:59 - WARNING - __main__ -   bfloat16: 291 个参数
+12/16/2025 16:20:59 - WARNING - __main__ -     示例参数: ['base_model.model.model.embed_tokens.weight', 'base_model.model.model.layers.0.self_attn.q_proj.weight', 'base_model.model.model.layers.0.self_attn.k_proj.weight']
+12/16/2025 16:20:59 - WARNING - __main__ -   float32: 256 个参数
+12/16/2025 16:20:59 - WARNING - __main__ -     示例参数: ['base_model.model.model.layers.0.self_attn.q_proj.lora_A.default.weight', 'base_model.model.model.layers.0.self_attn.q_proj.lora_B.default.weight', 'base_model.model.model.layers.0.self_attn.q_proj.loranew_A.default.weight']
+12/16/2025 16:20:59 - WARNING - __main__ - ============================================================
+
+12/16/2025 16:20:59 - WARNING - __main__ - ✓ 第一个参数精度: torch.bfloat16
+12/16/2025 16:20:59 - WARNING - __main__ - ✓ 第一个参数设备: cpu
+
+-----Gradient checkpointing: True -----
+trainable params: 1447034880 || all params: 6755192832 || trainable%: 21.42107436438019
+-----Gradient checkpointing: True -----
+move model to device: cuda:0
+move model to device: cuda:1
+resume_from_checkpoint: None
+TRAINER_STATE_NAME: trainer_state.json
+resume_from_checkpoint: None
+TRAINER_STATE_NAME: trainer_state.json
+[WARNING|logging.py:328] 2025-12-16 16:21:06,637 >> `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+  0%|          | 0/250 [00:00<?, ?it/s][WARNING|logging.py:328] 2025-12-16 16:21:06,819 >> `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/home/dengkn/AS-LoRA/src/peft/peft_model.py", line 288, in __getattr__
+[rank1]:     return super().__getattr__(name)  # defer to nn.Module's logic
+[rank1]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1962, in __getattr__
+[rank1]:     raise AttributeError(
+[rank1]: AttributeError: 'PeftModelForCausalLM' object has no attribute 'backward'
+
+[rank1]: During handling of the above exception, another exception occurred:
+
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/home/dengkn/AS-LoRA/src/peft/tuners/lora.py", line 280, in __getattr__
+[rank1]:     return super().__getattr__(name)  # defer to nn.Module's logic
+[rank1]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1962, in __getattr__
+[rank1]:     raise AttributeError(
+[rank1]: AttributeError: 'LoraModel' object has no attribute 'backward'
+
+[rank1]: During handling of the above exception, another exception occurred:
+
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/home/dengkn/AS-LoRA/src/run_uie_lora.py", line 674, in <module>
+[rank1]:     main()
+[rank1]:   File "/home/dengkn/AS-LoRA/src/run_uie_lora.py", line 607, in main
+[rank1]:     train_result = trainer.train(resume_from_checkpoint=checkpoint, modelpath=peft_model_id)   #model path --- IGNORE ---
+[rank1]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 401, in train
+[rank1]:     return inner_training_loop(
+[rank1]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 765, in _inner_training_loop
+[rank1]:     tr_loss_step = self.training_step(model, inputs, init_weights)
+[rank1]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 997, in training_step
+[rank1]:     self.deepspeed.backward(loss)
+[rank1]:   File "/home/dengkn/AS-LoRA/src/peft/peft_model.py", line 290, in __getattr__
+[rank1]:     return getattr(self.base_model, name)
+[rank1]:   File "/home/dengkn/AS-LoRA/src/peft/tuners/lora.py", line 282, in __getattr__
+[rank1]:     return getattr(self.model, name)
+[rank1]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1962, in __getattr__
+[rank1]:     raise AttributeError(
+[rank1]: AttributeError: 'LlamaForCausalLM_with_lossmask' object has no attribute 'backward'
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/dengkn/AS-LoRA/src/peft/peft_model.py", line 288, in __getattr__
+[rank0]:     return super().__getattr__(name)  # defer to nn.Module's logic
+[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1962, in __getattr__
+[rank0]:     raise AttributeError(
+[rank0]: AttributeError: 'PeftModelForCausalLM' object has no attribute 'backward'
+
+[rank0]: During handling of the above exception, another exception occurred:
+
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/dengkn/AS-LoRA/src/peft/tuners/lora.py", line 280, in __getattr__
+[rank0]:     return super().__getattr__(name)  # defer to nn.Module's logic
+[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1962, in __getattr__
+[rank0]:     raise AttributeError(
+[rank0]: AttributeError: 'LoraModel' object has no attribute 'backward'
+
+[rank0]: During handling of the above exception, another exception occurred:
+
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/dengkn/AS-LoRA/src/run_uie_lora.py", line 674, in <module>
+[rank0]:     main()
+[rank0]:   File "/home/dengkn/AS-LoRA/src/run_uie_lora.py", line 607, in main
+[rank0]:     train_result = trainer.train(resume_from_checkpoint=checkpoint, modelpath=peft_model_id)   #model path --- IGNORE ---
+[rank0]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 401, in train
+[rank0]:     return inner_training_loop(
+[rank0]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 765, in _inner_training_loop
+[rank0]:     tr_loss_step = self.training_step(model, inputs, init_weights)
+[rank0]:   File "/home/dengkn/AS-LoRA/src/uie_trainer_lora.py", line 997, in training_step
+[rank0]:     self.deepspeed.backward(loss)
+[rank0]:   File "/home/dengkn/AS-LoRA/src/peft/peft_model.py", line 290, in __getattr__
+[rank0]:     return getattr(self.base_model, name)
+[rank0]:   File "/home/dengkn/AS-LoRA/src/peft/tuners/lora.py", line 282, in __getattr__
+[rank0]:     return getattr(self.model, name)
+[rank0]:   File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1962, in __getattr__
+[rank0]:     raise AttributeError(
+[rank0]: AttributeError: 'LlamaForCausalLM_with_lossmask' object has no attribute 'backward'
+  0%|          | 0/250 [00:02<?, ?it/s]
+[rank0]:[W1216 16:21:09.649555524 ProcessGroupNCCL.cpp:1538] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[2025-12-16 16:21:10,506] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 27893
+[2025-12-16 16:21:10,507] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 27894
+[2025-12-16 16:21:10,546] [ERROR] [launch.py:325:sigkill_handler] ['/home/dengkn/miniforge3/envs/aslora/bin/python3.9', '-u', 'src/run_uie_lora.py', '--local_rank=1', '--do_train', '--do_predict', '--predict_with_generate', '--model_name_or_path', 'logs_and_outputs_llama/order_1/outputs_order_1/3-yahoo/adapter', '--data_dir', 'CL_Benchmark', '--task_config_dir', 'configs/order1_configs/agnews', '--instruction_file', 'configs/instruction_config.json', '--instruction_strategy', 'single', '--output_dir', 'logs_and_outputs_llama/order_1/outputs_order_1/4-agnews', '--per_device_train_batch_size', '1', '--per_device_eval_batch_size', '2', '--gradient_accumulation_steps', '8', '--learning_rate', '2e-04', '--num_train_epochs', '1', '--deepspeed', 'configs/ds_configs/stage2_llama.config', '--run_name', 'order1_round4', '--max_source_length', '512', '--max_target_length', '50', '--generation_max_length', '50', '--add_task_name', 'True', '--add_dataset_name', 'True', '--overwrite_output_dir', '--overwrite_cache', '--lr_scheduler_type', 'constant', '--warmup_steps', '0', '--logging_strategy', 'steps', '--logging_steps', '10', '--evaluation_strategy', 'no', '--save_strategy', 'no', '--save_steps', '1500', '--lamda_1', '0.5', '--lamda_2', '0', '--lora_modules', '.*self_attn.(q_proj|v_proj).*', '--optim_target_modules', '.*mlp.gate_proj.*', '--proj_lora_modules', '.*self_attn.(q_proj|v_proj).loranew_A.*', '--galore_rank', '2', '--galore_scale', '0.25', '--galore_lr', '1e-06', '--gradient_checkpointing', 'True', '--bf16', 'True', '--fp16', 'False'] exits with return code = 1

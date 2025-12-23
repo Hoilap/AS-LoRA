@@ -1,0 +1,96 @@
++ export CUDA_DEVICE_ORDER=PCI_BUS_ID
++ CUDA_DEVICE_ORDER=PCI_BUS_ID
++ export TRANSFORMERS_CACHE=/home/dengkn/.cache/huggingface
++ TRANSFORMERS_CACHE=/home/dengkn/.cache/huggingface
++ export LC_ALL=en_US.UTF-8
++ LC_ALL=en_US.UTF-8
++ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,max_split_size_mb:128
++ PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True,max_split_size_mb:128
++ export PYTORCH_NO_CUDA_MEMORY_CACHING=0
++ PYTORCH_NO_CUDA_MEMORY_CACHING=0
+++ shuf -i25000-30000 -n1
++ port=26120
++ deepspeed --include localhost:0,1 --master_port 26120 src/run_uie_lora.py --do_train --do_predict --predict_with_generate --model_name_or_path initial_model/llama --data_dir CL_Benchmark --task_config_dir configs/order1_configs/dbpedia --instruction_file configs/instruction_config.json --instruction_strategy single --output_dir logs_and_outputs_llama/order_1/outputs_order_1_lowmem/1-dbpedia --per_device_train_batch_size 1 --per_device_eval_batch_size 2 --gradient_accumulation_steps 16 --learning_rate 2e-04 --num_train_epochs 1 --deepspeed configs/ds_configs/stage2_llama.config --run_name order1_round1 --max_source_length 384 --max_target_length 50 --generation_max_length 50 --add_task_name True --add_dataset_name True --overwrite_output_dir --overwrite_cache --lr_scheduler_type constant --warmup_steps 0 --logging_strategy steps --logging_steps 10 --evaluation_strategy no --save_strategy no --save_steps 1500 --lamda_1 0.5 --lamda_2 0 --lora_modules '.*self_attn.(q_proj|v_proj).*' --optim_target_modules '.*mlp.gate_proj.*' --proj_lora_modules '.*self_attn.(q_proj|v_proj).loranew_A.*' --galore_rank 2 --galore_scale 0.25 --galore_lr 1e-06 --gradient_checkpointing True --bf16 True --fp16 False
+[2025-12-15 18:46:17,890] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/utils/hub.py:127: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[2025-12-15 18:46:19,634] [WARNING] [runner.py:212:fetch_hostfile] Unable to find hostfile, will proceed with training with local resources only.
+[2025-12-15 18:46:19,634] [INFO] [runner.py:585:main] cmd = /home/dengkn/miniforge3/envs/aslora/bin/python3.9 -u -m deepspeed.launcher.launch --world_info=eyJsb2NhbGhvc3QiOiBbMCwgMV19 --master_addr=127.0.0.1 --master_port=26120 --enable_each_rank_log=None src/run_uie_lora.py --do_train --do_predict --predict_with_generate --model_name_or_path initial_model/llama --data_dir CL_Benchmark --task_config_dir configs/order1_configs/dbpedia --instruction_file configs/instruction_config.json --instruction_strategy single --output_dir logs_and_outputs_llama/order_1/outputs_order_1_lowmem/1-dbpedia --per_device_train_batch_size 1 --per_device_eval_batch_size 2 --gradient_accumulation_steps 16 --learning_rate 2e-04 --num_train_epochs 1 --deepspeed configs/ds_configs/stage2_llama.config --run_name order1_round1 --max_source_length 384 --max_target_length 50 --generation_max_length 50 --add_task_name True --add_dataset_name True --overwrite_output_dir --overwrite_cache --lr_scheduler_type constant --warmup_steps 0 --logging_strategy steps --logging_steps 10 --evaluation_strategy no --save_strategy no --save_steps 1500 --lamda_1 0.5 --lamda_2 0 --lora_modules .*self_attn.(q_proj|v_proj).* --optim_target_modules .*mlp.gate_proj.* --proj_lora_modules .*self_attn.(q_proj|v_proj).loranew_A.* --galore_rank 2 --galore_scale 0.25 --galore_lr 1e-06 --gradient_checkpointing True --bf16 True --fp16 False
+[2025-12-15 18:46:20,760] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/transformers/utils/hub.py:127: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+[2025-12-15 18:46:22,526] [INFO] [launch.py:146:main] WORLD INFO DICT: {'localhost': [0, 1]}
+[2025-12-15 18:46:22,526] [INFO] [launch.py:152:main] nnodes=1, num_local_procs=2, node_rank=0
+[2025-12-15 18:46:22,526] [INFO] [launch.py:163:main] global_rank_mapping=defaultdict(<class 'list'>, {'localhost': [0, 1]})
+[2025-12-15 18:46:22,526] [INFO] [launch.py:164:main] dist_world_size=2
+[2025-12-15 18:46:22,526] [INFO] [launch.py:168:main] Setting CUDA_VISIBLE_DEVICES=0,1
+[2025-12-15 18:46:22,552] [INFO] [launch.py:256:main] process 4019296 spawned with command: ['/home/dengkn/miniforge3/envs/aslora/bin/python3.9', '-u', 'src/run_uie_lora.py', '--local_rank=0', '--do_train', '--do_predict', '--predict_with_generate', '--model_name_or_path', 'initial_model/llama', '--data_dir', 'CL_Benchmark', '--task_config_dir', 'configs/order1_configs/dbpedia', '--instruction_file', 'configs/instruction_config.json', '--instruction_strategy', 'single', '--output_dir', 'logs_and_outputs_llama/order_1/outputs_order_1_lowmem/1-dbpedia', '--per_device_train_batch_size', '1', '--per_device_eval_batch_size', '2', '--gradient_accumulation_steps', '16', '--learning_rate', '2e-04', '--num_train_epochs', '1', '--deepspeed', 'configs/ds_configs/stage2_llama.config', '--run_name', 'order1_round1', '--max_source_length', '384', '--max_target_length', '50', '--generation_max_length', '50', '--add_task_name', 'True', '--add_dataset_name', 'True', '--overwrite_output_dir', '--overwrite_cache', '--lr_scheduler_type', 'constant', '--warmup_steps', '0', '--logging_strategy', 'steps', '--logging_steps', '10', '--evaluation_strategy', 'no', '--save_strategy', 'no', '--save_steps', '1500', '--lamda_1', '0.5', '--lamda_2', '0', '--lora_modules', '.*self_attn.(q_proj|v_proj).*', '--optim_target_modules', '.*mlp.gate_proj.*', '--proj_lora_modules', '.*self_attn.(q_proj|v_proj).loranew_A.*', '--galore_rank', '2', '--galore_scale', '0.25', '--galore_lr', '1e-06', '--gradient_checkpointing', 'True', '--bf16', 'True', '--fp16', 'False']
+[2025-12-15 18:46:22,575] [INFO] [launch.py:256:main] process 4019297 spawned with command: ['/home/dengkn/miniforge3/envs/aslora/bin/python3.9', '-u', 'src/run_uie_lora.py', '--local_rank=1', '--do_train', '--do_predict', '--predict_with_generate', '--model_name_or_path', 'initial_model/llama', '--data_dir', 'CL_Benchmark', '--task_config_dir', 'configs/order1_configs/dbpedia', '--instruction_file', 'configs/instruction_config.json', '--instruction_strategy', 'single', '--output_dir', 'logs_and_outputs_llama/order_1/outputs_order_1_lowmem/1-dbpedia', '--per_device_train_batch_size', '1', '--per_device_eval_batch_size', '2', '--gradient_accumulation_steps', '16', '--learning_rate', '2e-04', '--num_train_epochs', '1', '--deepspeed', 'configs/ds_configs/stage2_llama.config', '--run_name', 'order1_round1', '--max_source_length', '384', '--max_target_length', '50', '--generation_max_length', '50', '--add_task_name', 'True', '--add_dataset_name', 'True', '--overwrite_output_dir', '--overwrite_cache', '--lr_scheduler_type', 'constant', '--warmup_steps', '0', '--logging_strategy', 'steps', '--logging_steps', '10', '--evaluation_strategy', 'no', '--save_strategy', 'no', '--save_steps', '1500', '--lamda_1', '0.5', '--lamda_2', '0', '--lora_modules', '.*self_attn.(q_proj|v_proj).*', '--optim_target_modules', '.*mlp.gate_proj.*', '--proj_lora_modules', '.*self_attn.(q_proj|v_proj).loranew_A.*', '--galore_rank', '2', '--galore_scale', '0.25', '--galore_lr', '1e-06', '--gradient_checkpointing', 'True', '--bf16', 'True', '--fp16', 'False']
+[2025-12-15 18:46:25,221] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-12-15 18:46:25,228] [INFO] [real_accelerator.py:203:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2025-12-15 18:46:26,536] [INFO] [comm.py:652:init_distributed] cdb=None
+[2025-12-15 18:46:26,536] [INFO] [comm.py:683:init_distributed] Initializing TorchBackend in DeepSpeed with backend nccl
+[2025-12-15 18:46:26,538] [INFO] [comm.py:652:init_distributed] cdb=None
+12/15/2025 18:46:26 - WARNING - __main__ - According to arugements, Process rank: 1, device: cuda:1, n_gpu: 1distributed training: True, 16-bits training: False
+
+######################
+lora=gpfirst,
+galore=gpfirst,
+lorarank=8,
+lr=0.0002,
+galorerank=2
+galore lr=1e-06
+######################
+
+12/15/2025 18:46:26 - WARNING - __main__ - According to arugements, Process rank: 0, device: cuda:0, n_gpu: 1distributed training: True, 16-bits training: False
+normalizer.cc(51) LOG(INFO) precompiled_charsmap is empty. use identity normalization.
+normalizer.cc(51) LOG(INFO) precompiled_charsmap is empty. use identity normalization.
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:01,  1.48it/s]Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:01,  1.19it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:01<00:00,  1.62it/s]Loading checkpoint shards:  67%|██████▋   | 2/3 [00:01<00:00,  1.37it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.81it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.73it/s]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.65it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:01<00:00,  1.54it/s]
+trainable params: 1447034880 || all params: 6742609920 || trainable%: 21.461049907511185
+12/15/2025 18:46:36 - WARNING - __main__ - 
+============================================================
+12/15/2025 18:46:36 - WARNING - __main__ - 模型参数精度验证:
+12/15/2025 18:46:36 - WARNING - __main__ - ============================================================
+12/15/2025 18:46:36 - WARNING - __main__ -   bfloat16: 291 个参数
+12/15/2025 18:46:36 - WARNING - __main__ -     示例参数: ['base_model.model.model.embed_tokens.weight', 'base_model.model.model.layers.0.self_attn.q_proj.weight', 'base_model.model.model.layers.0.self_attn.k_proj.weight']
+12/15/2025 18:46:36 - WARNING - __main__ -   float32: 256 个参数
+12/15/2025 18:46:36 - WARNING - __main__ -     示例参数: ['base_model.model.model.layers.0.self_attn.q_proj.lora_A.default.weight', 'base_model.model.model.layers.0.self_attn.q_proj.lora_B.default.weight', 'base_model.model.model.layers.0.self_attn.q_proj.loranew_A.default.weight']
+12/15/2025 18:46:36 - WARNING - __main__ - ============================================================
+
+12/15/2025 18:46:36 - WARNING - __main__ - ✓ 第一个参数精度: torch.bfloat16
+12/15/2025 18:46:36 - WARNING - __main__ - ✓ 第一个参数设备: cpu
+
+-----Gradient checkpointing: True -----
+trainable params: 1447034880 || all params: 6742609920 || trainable%: 21.461049907511185
+-----Gradient checkpointing: True -----
+[WARNING|logging.py:328] 2025-12-15 18:46:43,666 >> `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+  0%|          | 0/437 [00:00<?, ?it/s][WARNING|logging.py:328] 2025-12-15 18:46:43,862 >> `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+  0%|          | 1/437 [01:24<10:17:39, 85.00s/it]  0%|          | 2/437 [01:27<4:22:19, 36.18s/it]   1%|          | 3/437 [01:29<2:28:53, 20.58s/it]  1%|          | 4/437 [01:31<1:35:56, 13.29s/it]  1%|          | 5/437 [01:33<1:06:37,  9.25s/it]  1%|▏         | 6/437 [01:35<48:53,  6.81s/it]    2%|▏         | 7/437 [01:37<37:38,  5.25s/it]  2%|▏         | 8/437 [01:39<30:17,  4.24s/it]  2%|▏         | 9/437 [01:41<25:23,  3.56s/it]  2%|▏         | 10/437 [01:43<22:01,  3.10s/it][2025-12-15 19:16:07,233] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 4019296
+Traceback (most recent call last):
+  File "/home/dengkn/miniforge3/envs/aslora/bin/deepspeed", line 6, in <module>
+    main()
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/deepspeed/launcher/runner.py", line 601, in main
+    result.wait()
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/subprocess.py", line 1189, in wait
+    return self._wait(timeout=timeout)
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/subprocess.py", line 1933, in _wait
+    (pid, sts) = self._try_wait(0)
+  File "/home/dengkn/miniforge3/envs/aslora/lib/python3.9/subprocess.py", line 1891, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+KeyboardInterrupt
+[rank1]:[W1215 19:16:07.213772353 TCPStore.cpp:125] [c10d] recvValue failed on SocketImpl(fd=30, addr=[localhost]:47640, remote=[localhost]:26120): Connection reset by peer
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:679 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x80 (0x7093581a2eb0 in /home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x5d694d1 (0x70933b7694d1 in /home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: <unknown function> + 0x5d6a933 (0x70933b76a933 in /home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: <unknown function> + 0x5d6b47a (0x70933b76b47a in /home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/lib/libtorch_cpu.so)
+frame #4: c10d::TCPStore::check(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) + 0x31e (0x70933b76619e in /home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/lib/libtorch_cpu.so)
+frame #5: c10d::ProcessGroupNCCL::HeartbeatMonitor::runLoop() + 0x398 (0x7092fac3db18 in /home/dengkn/miniforge3/envs/aslora/lib/python3.9/site-packages/torch/lib/libtorch_cuda.so)
+frame #6: <unknown function> + 0xef5e4 (0x7092ddeef5e4 in /home/dengkn/miniforge3/envs/aslora/bin/../lib/libstdc++.so.6)
+frame #7: <unknown function> + 0x9caa4 (0x709358e9caa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #8: <unknown function> + 0x129c6c (0x709358f29c6c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank1]:[W1215 19:16:07.219860556 ProcessGroupNCCL.cpp:1783] [PG ID 0 PG GUID 0(default_pg) Rank 1] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: Connection reset by peer
+[2025-12-15 19:16:08,002] [INFO] [launch.py:319:sigkill_handler] Killing subprocess 4019297
+[2025-12-15 19:16:08,771] [INFO] [launch.py:328:sigkill_handler] Main process received SIGINT, exiting

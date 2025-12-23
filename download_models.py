@@ -28,7 +28,8 @@ print("✓ T5-large 模型已保存到 initial_model/t5-large")
 try:
     from modelscope import snapshot_download
     print("开始下载 LLaMA2 模型...")
-    model_dir = snapshot_download('LLM-Research/llama-2-7b',local_dir='initial_model/llama')
+    #model_dir = snapshot_download('LLM-Research/llama-2-7b',local_dir='initial_model/llama')
+    model_dir = snapshot_download('shakechen/Llama-2-7b-chat-hf',local_dir='initial_model/llama')
     print("✓ LLaMA 模型已保存到 initial_model/llama")
 except ImportError:
     print("⚠ 若要下载 LLaMA2，请先安装 modelscope: pip install modelscope")
