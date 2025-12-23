@@ -285,6 +285,9 @@ def main():
     transformers.utils.logging.enable_default_handler()
     transformers.utils.logging.enable_explicit_format()
 
+    # CUDA availability preflight
+    if not torch.cuda.is_available():
+        logger.warning("CUDA not available: training will run on CPU. If unexpected, check PyTorch CUDA build and NVIDIA driver status (nvidia-smi).")
     # Log on each process the small summary:
     logger.warning(
         f"According to arugements, Process rank: {training_args.local_rank}, device: {training_args.device}, n_gpu: {training_args.n_gpu}"
